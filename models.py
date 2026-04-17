@@ -32,24 +32,6 @@ class ShopMeta(Base):
     order_count = Column(Integer, default=0)
 
 
-class ExternalOrderTracking(Base):
-    __tablename__ = "external_order_tracking"
-
-    order_code = Column(String, primary_key=True)
-    cod_amount = Column(Integer, default=0)
-    status = Column(String, default="unknown")
-    is_paid = Column(Integer, default=0)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-
-class ExternalOrderConfig(Base):
-    __tablename__ = "external_order_config"
-
-    id = Column(Integer, primary_key=True, default=1)
-    fee_items_json = Column(Text)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-
 class ExternalOrderTrackingHoang(Base):
     __tablename__ = "external_order_tracking_hoang"
 
