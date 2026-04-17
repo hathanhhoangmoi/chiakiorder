@@ -162,22 +162,6 @@ body{
 }
 .external-orders-title{font-size:16px;font-weight:800;color:#570301}
 .external-orders-sub{font-size:12px;color:#a06070;margin-top:4px;line-height:1.6}
-.external-scope-switch{
-  display:flex;gap:8px;flex-wrap:wrap;
-  margin-top:12px;
-}
-.external-scope-btn{
-  padding:9px 14px;border:none;border-radius:999px;
-  background:rgba(186,214,253,.16);color:#7a3040;
-  font-size:12px;font-weight:800;cursor:pointer;
-  transition:all .2s;
-}
-.external-scope-btn.active{
-  background:linear-gradient(135deg,#f59e0b,#f97316);
-  color:#fff7ed;
-  box-shadow:0 6px 16px rgba(249,115,22,.25);
-}
-.external-scope-btn:hover{transform:translateY(-1px)}
 .external-orders-actions{
   display:flex;gap:8px;align-items:center;flex-wrap:wrap;
 }
@@ -607,33 +591,6 @@ body{
   font-size:11px;
   line-height:1;
 }
-.sync-stage-switch{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-.sync-stage-btn{
-  padding:7px 14px;
-  border-radius:999px;
-  border:1px solid rgba(186,214,253,.45);
-  background:rgba(255,255,255,.45);
-  color:#7a3040;
-  font-size:11px;
-  font-weight:800;
-  cursor:pointer;
-  transition:all .18s;
-}
-.sync-stage-btn:hover{
-  background:rgba(255,255,255,.72);
-  color:#570301;
-}
-.sync-stage-btn.active{
-  background:linear-gradient(135deg,#f59e0b,#f97316);
-  color:#fff7ed;
-  border-color:transparent;
-  box-shadow:0 6px 16px rgba(249,115,22,.24);
-}
 table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.3);backdrop-filter:blur(20px)}
 thead th{
   padding:11px 14px;text-align:left;font-size:11px;font-weight:600;
@@ -786,32 +743,6 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
   cursor:pointer;transition:all .15s;
 }
 .btn-change-id:hover{background:rgba(186,214,253,.45)}
-.chart-card{
-  border-radius:35px;padding:20px 24px;
-  background:rgba(255,255,255,.45);
-  border:1px solid rgba(255,255,255,.75);
-  backdrop-filter:blur(20px);
-  box-shadow:0 4px 20px rgba(87,3,1,.08);
-  margin-bottom:24px;
-}
-.chart-toolbar{
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:10px;margin-bottom:16px;
-}
-.chart-title{font-size:14px;font-weight:700;color:#570301}
-.chart-tabs{display:flex;gap:6px}
-.chart-tab{
-  padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;
-  cursor:pointer;border:1px solid rgba(186,214,253,.4);
-  background:rgba(255,255,255,.35);color:#7a3040;transition:all .2s;
-}
-.chart-tab:hover{background:rgba(255,255,255,.6)}
-.chart-tab.active{
-  background:linear-gradient(135deg,#F5BAD5,#BAD6FD);
-  color:#570301;border-color:transparent;
-  box-shadow:0 3px 10px rgba(245,186,213,.35);
-}
-.chart-wrap{position:relative;height:260px}
 .pass-modal-bg{
   position:fixed;inset:0;z-index:3000;
   display:none;align-items:center;justify-content:center;
@@ -895,15 +826,6 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
   padding:0;
 }
 .info-modal-bg.show{display:flex}
-.download-panel #syncPanelPending{
-  width:100%;
-  justify-content:flex-start;
-  align-items:flex-start;
-}
-.download-panel #panelSyncOrdersPending{
-  width:100%;
-  max-width:100%;
-}
 .info-modal{
   position:relative;
   width:100%;max-width:100%;
@@ -1411,42 +1333,6 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
   display:none;
 }
 .mobile-detail-note.show{display:block}
-.shop-download-card{
-  width:min(560px,100%);
-}
-.shop-download-progress{
-  margin:14px 0 16px;
-  width:100%;
-  height:10px;
-  border-radius:999px;
-  background:rgba(186,214,253,.22);
-  overflow:hidden;
-}
-.shop-download-progress-bar{
-  width:0;
-  height:100%;
-  border-radius:inherit;
-  background:linear-gradient(135deg,#f59e0b,#f97316,#BAD6FD);
-  transition:width .25s ease;
-}
-.shop-download-actions{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:16px;
-}
-.shop-download-actions .btn{
-  flex:1 1 160px;
-}
-.shop-download-btn-secondary{
-  background:rgba(186,214,253,.22);
-  color:#570301;
-  box-shadow:none;
-}
-.shop-download-btn-secondary:hover{
-  transform:translateY(-1px);
-  box-shadow:0 8px 20px rgba(87,3,1,.08);
-}
 body.compact-touch-ui .header{
   padding:14px 16px;
   gap:12px;
@@ -1491,7 +1377,6 @@ body.compact-touch-ui tbody td{
   padding:10px 12px;
 }
 body.compact-touch-ui .external-orders-wrap,
-body.compact-touch-ui #chartPanel,
 body.compact-touch-ui #shopTabsPanel,
 body.compact-touch-ui #panelOrderInfo{
   display:none !important;
@@ -1574,66 +1459,18 @@ body.compact-touch-ui #panelOrderInfo{
   }
   @page{size:4in 6in;margin:0}
 }
-.sync-panel{
-  display:block;width:100%;background:transparent;border:none;
-  border-radius:0;padding:0;box-shadow:none;max-height:none;
-  overflow-y:visible;backdrop-filter:none;
-}
-.sync-panel-title{font-size:13px;font-weight:700;color:#570301;margin-bottom:14px}
 .sync-label{
   font-size:10px;font-weight:700;color:#a06070;
   letter-spacing:.4px;text-transform:uppercase;
   display:block;margin-bottom:4px;margin-top:10px;
 }
-.sync-input{
-  width:100%;padding:9px 12px;
-  border:1.5px solid rgba(186,214,253,.5);
-  border-radius:50px;font-size:12px;
-  background:rgba(255,255,255,.6);color:#570301;
-  outline:none;transition:border .2s;
-  box-sizing:border-box;font-family:monospace;
-}
-.sync-input:focus{border-color:#BAD6FD;box-shadow:0 0 0 3px rgba(186,214,253,.15)}
-select.sync-input{font-family:inherit;cursor:pointer}
-.btn-sync{
-  width:100%;margin-top:14px;padding:11px;border:none;border-radius:50px;
-  background:linear-gradient(135deg,#F5BAD5,#570301);
-  color:#fff;font-family:inherit;font-size:13px;font-weight:700;
-  cursor:pointer;transition:all .2s;
-  box-shadow:0 4px 14px rgba(87,3,1,.25);
-}
-.btn-sync:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(87,3,1,.35)}
-.btn-sync:disabled{background:rgba(220,200,210,.4);color:rgba(87,3,1,.3);box-shadow:none;cursor:not-allowed;transform:none}
 .sync-msg{
   margin-top:10px;font-size:11px;text-align:center;
   padding:7px 10px;border-radius:8px;display:none;line-height:1.5;
 }
 .sync-msg.ok{display:block;background:rgba(247,229,148,.35);color:#7a4500}
 .sync-msg.err{display:block;background:rgba(245,186,213,.4);color:#570301}
-.btn-chiaki-link{
-  display:block;width:100%;padding:9px 12px;
-  background:rgba(247,229,148,.3);border:1.5px solid rgba(247,229,148,.5);
-  border-radius:50px;color:#7a4500;font-size:12px;font-weight:700;
-  text-align:center;text-decoration:none;box-sizing:border-box;
-  margin-top:6px;transition:all .2s;
-}
-.btn-chiaki-link:hover{background:rgba(247,229,148,.5)}
 .sync-hint{font-size:10px;color:#a06070;text-align:center;margin:6px 0 10px;line-height:1.5}
-.sync-dropzone{
-  border:2px dashed rgba(186,214,253,.5);
-  border-radius:14px;padding:20px 12px;
-  text-align:center;cursor:pointer;
-  background:rgba(255,255,255,.4);color:#7a3040;
-  font-size:12px;line-height:1.6;transition:all .2s;
-}
-.sync-dropzone:hover,.sync-dropzone.dragover{
-  border-color:#BAD6FD;background:rgba(186,214,253,.1);
-}
-.sync-drop-icon{font-size:24px;margin-bottom:6px}
-.sync-file-name{
-  margin-top:8px;font-size:11px;color:#7a4500;
-  text-align:center;font-weight:700;min-height:16px;
-}
 .combo-row{
   display:grid;border-radius:50px;
   grid-template-columns:1fr auto;gap:6px;align-items:center;
@@ -2142,7 +1979,6 @@ select.sync-input{font-family:inherit;cursor:pointer}
 ::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#BAD6FD,#570301)}
 </style>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <body>
 <!-- ID Gate -->
@@ -2262,10 +2098,6 @@ select.sync-input{font-family:inherit;cursor:pointer}
           <div class="external-orders-sub">
             Theo dõi đơn hàng SPX.
           </div>
-          <div class="external-scope-switch">
-            <button class="external-scope-btn active" id="externalScopeBtnPhuong" type="button" onclick="switchExternalScope('phuong')">Phương's Order</button>
-            <button class="external-scope-btn" id="externalScopeBtnHoang" type="button" onclick="switchExternalScope('hoang')">Hoàng's Order</button>
-          </div>
         </div>
         <div class="external-orders-actions">
           <button class="external-config-toggle" id="externalConfigToggleBtn" type="button" onclick="toggleExternalConfig()">⚙️ Config</button>
@@ -2335,12 +2167,12 @@ select.sync-input{font-family:inherit;cursor:pointer}
           </div>
           <div class="external-stat">
             <div class="external-stat-label">💸 SỐ DƯ HIỆN TẠI</div>
-            <div class="external-stat-value" id="externalPayoutToPhuong">0₫</div>
+            <div class="external-stat-value" id="externalCurrentBalance">0₫</div>
             <div class="external-stat-sub">Doanh thu - khấu trừ</div>
           </div>
           <div class="external-stat">
             <div class="external-stat-label">💳 ĐÃ THANH TOÁN</div>
-            <div class="external-stat-value" id="externalPaidToPhuong">0₫</div>
+            <div class="external-stat-value" id="externalPaidAmount">0₫</div>
             <div class="external-stat-sub">Số tiền đã được thanh toán</div>
           </div>
         </div>
@@ -2694,7 +2526,7 @@ select.sync-input{font-family:inherit;cursor:pointer}
 
     <div class="info-modal-icon">🗂️</div>
     <div class="info-modal-title">Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
-    <div class="info-modal-sub">Tải toàn bộ file shop rồi gửi file vào đúng dòng tương ứng bên dưới</div>
+    <div class="info-modal-sub">Lấy JSON đơn hàng chờ lấy hàng rồi lưu vào dữ liệu gian hàng</div>
 
     <label class="sync-label">Lấy JSON đơn hàng từ Chiaki</label>
     <div class="sync-hint">Chọn gian hàng, điền token seller rồi mở tab JSON. Sau khi copy JSON trả về, paste vào ô bên dưới để lưu dữ liệu cho đúng shop.</div>
@@ -2718,61 +2550,6 @@ select.sync-input{font-family:inherit;cursor:pointer}
       Lưu JSON vào DB
     </button>
     <div class="info-error" id="syncJsonMsg" style="margin-top:6px"></div>
-
-    <div style="margin-top:18px;border-top:1px solid rgba(198,181,255,.25);padding-top:16px;">
-    <label class="sync-label">Tải file Excel đơn hàng từ Chiaki</label>
-    <div class="sync-hint">Nhấn một lần để mở 1 popup giữa màn hình. Popup sẽ lần lượt mở link GET từng shop để bạn xử lý Cloudflare rồi chuyển shop tiếp theo.</div>
-    <button class="btn-info-search" id="chiakiLink" type="button"
-       onclick="downloadAllShopFiles()"
-       style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin-bottom:8px">
-      🔗 Tải toàn bộ shop
-    </button>
-    <input type="file" id="syncFileInput" accept=".xlsx,.xls"
-           style="display:none" onchange="handleSyncFile(this.files[0])"/>
-    <div class="sync-file-name" id="syncFileName"></div>
-    <div class="info-error" id="syncMsg" style="margin-top:6px"></div>
-    </div>
-    <div style="margin-top:18px;border-top:1px solid rgba(198,181,255,.25);padding-top:16px;">
-      <div class="info-modal-title" style="font-size:14px;margin-bottom:12px">📎 Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
-      <div
-        id="comboBulkDropzone"
-        style="border:1.5px dashed rgba(186,214,253,.65);border-radius:18px;padding:16px 14px;text-align:center;background:rgba(255,255,255,.42);cursor:pointer;margin-bottom:10px"
-        onclick="document.getElementById('comboBulkInput').click()"
-        ondragover="event.preventDefault(); event.stopPropagation(); this.classList.add('dragover')"
-        ondragleave="event.stopPropagation(); this.classList.remove('dragover')"
-        ondrop="handleComboBulkDrop(event)"
-      >
-        <div style="font-size:13px;font-weight:700;color:#570301">📂 Kéo thả nhiều file Excel vào đây</div>
-        <div style="font-size:11px;color:#a06070;margin-top:4px">
-          File sẽ được gán theo thứ tự shop: file đầu là shop đầu tiên, file thứ 2 là shop tiếp theo...
-        </div>
-        <div style="font-size:11px;color:#9b8bb4;margin-top:6px">
-          Ví dụ: <code>danh-sach-don-hang.xlsx</code>, <code>danh-sach-don-hang (1).xlsx</code>, ...
-        </div>
-      </div>
-      <input type="file" id="comboBulkInput" accept=".xlsx,.xls" multiple style="display:none"
-             onchange="handleComboBulkFiles(this.files)"/>
-      <div id="comboBulkSummary" style="font-size:12px;color:#a06070;margin-bottom:12px;min-height:18px"></div>
-      <div class="sync-shop-panel collapsible-panel collapsed" id="comboShopListPanel">
-        <div class="panel-chrome">
-          <div class="panel-window-controls">
-            <button class="panel-dot panel-dot-red" type="button" aria-hidden="true"></button>
-            <button class="panel-dot panel-dot-yellow" type="button" onclick="togglePanelCollapse('comboShopListPanel')" title="Thu gọn / mở rộng"></button>
-            <button class="panel-dot panel-dot-green" type="button" aria-hidden="true"></button>
-          </div>
-          <div class="panel-inline-title">Danh sách các gian hàng</div>
-        </div>
-        <div class="panel-body">
-          <div id="comboRows" style="display:flex;border-radius:50px;flex-direction:column;gap:8px;"></div>
-        </div>
-      </div>
-      <button class="btn-info-search" id="btnComboSync"
-              style="margin-top:12px;width:100%;background:linear-gradient(to right,#ffc3a0,#ffafbd);color:#1e3a5f;box-shadow:0 4px 14px rgba(255,175,189,.4)"
-              onclick="doComboSync()">
-        🔁 SYNC
-      </button>
-      <div class="info-error" id="comboMsg" style="margin-top:8px"></div>
-    </div>
 </div>
 </div>
 </div>
@@ -2792,29 +2569,6 @@ select.sync-input{font-family:inherit;cursor:pointer}
   </div>
 </div>
 
-<div class="mobile-detail-modal" id="shopDownloadModal" onclick="if(event.target===this) closeShopDownloadModal()">
-  <div class="mobile-detail-card shop-download-card">
-    <div class="mobile-detail-head">
-      <div>
-        <div class="mobile-detail-title">Tải file shop</div>
-        <div class="mobile-detail-sub" id="shopDownloadModalSub">Popup này sẽ lần lượt mở link GET từng gian hàng để xử lý Cloudflare.</div>
-      </div>
-      <button class="mobile-detail-close" id="shopDownloadModalClose" type="button" onclick="closeShopDownloadModal()">✕</button>
-    </div>
-    <div class="mobile-detail-status" id="shopDownloadModalStatus">Sẵn sàng tải</div>
-    <div class="shop-download-progress">
-      <div class="shop-download-progress-bar" id="shopDownloadProgressBar"></div>
-    </div>
-    <div class="mobile-detail-rows" id="shopDownloadModalRows"></div>
-    <div class="mobile-detail-note show" id="shopDownloadModalNote">Chế độ này mở trực tiếp link Chiaki để vượt Cloudflare, nên tên file thực tế sẽ do Chiaki và trình duyệt quyết định.</div>
-    <div class="shop-download-actions">
-      <button class="btn btn-primary" id="shopDownloadOpenBtn" type="button" onclick="reopenCurrentShopDownloadPopup()">Mở lại popup</button>
-      <button class="btn btn-primary" id="shopDownloadNextBtn" type="button" onclick="advanceShopDownloadSession()">Mở shop tiếp theo</button>
-      <button class="btn shop-download-btn-secondary" id="shopDownloadStopBtn" type="button" onclick="cancelShopDownloadSession()">Dừng</button>
-    </div>
-  </div>
-</div>
-
 <div class="taken-orders-modal-bg" id="takenOrdersModal" onclick="if(event.target===this) closeTakenOrdersModal()">
   <div class="taken-orders-modal">
     <div class="taken-orders-modal-head">
@@ -2830,109 +2584,10 @@ select.sync-input{font-family:inherit;cursor:pointer}
   </div>
 </div>
 
-<div class="info-modal-bg" id="syncPanelPending" style="display:none;margin-top:16px">
-  <div class="info-modal collapsible-panel collapsed" id="panelSyncOrdersPending">
-    <div class="panel-chrome">
-      <div class="panel-window-controls">
-        <button class="panel-dot panel-dot-red" type="button" aria-hidden="true"></button>
-        <button class="panel-dot panel-dot-yellow" type="button" onclick="togglePanelCollapse('panelSyncOrdersPending')" title="Thu gọn / mở rộng"></button>
-        <button class="panel-dot panel-dot-green" type="button" aria-hidden="true"></button>
-      </div>
-      <div class="panel-inline-title">Đồng bộ đơn hàng CHỜ XÁC NHẬN</div>
-    </div>
-    <div class="panel-body">
-
-    <div class="info-modal-icon">🗂️</div>
-    <div class="info-modal-title">Đồng bộ đơn hàng CHỜ XÁC NHẬN</div>
-    <div class="info-modal-sub">Tải toàn bộ file shop rồi gửi file vào đúng dòng tương ứng bên dưới</div>
-
-    <label class="sync-label">Tải file đơn hàng từ Chiaki</label>
-    <div class="sync-hint">Nhấn một lần để mở 1 popup giữa màn hình. Popup sẽ lần lượt mở link GET từng shop để bạn xử lý Cloudflare rồi chuyển shop tiếp theo.</div>
-    <select class="info-input" id="syncShopIdPending" onchange="updateChiakiLinkPending()"
-            style="display:none">
-      <option value="">Mời chọn</option>
-    </select>
-    <button class="btn-info-search" id="chiakiLinkPending" type="button"
-       onclick="downloadAllShopFilesPending()"
-       style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin-bottom:8px">
-      🔗 Tải toàn bộ shop
-    </button>
-    <input type="file" id="syncFileInputPending" accept=".xlsx,.xls"
-           style="display:none" onchange="handleSyncFilePending(this.files[0])"/>
-    <div class="sync-file-name" id="syncFileNamePending"></div>
-    <div class="info-error" id="syncMsgPending" style="margin-top:6px"></div>
-    <div style="margin-top:18px;border-top:1px solid rgba(198,181,255,.25);padding-top:16px;">
-      <div class="info-modal-title" style="font-size:14px;margin-bottom:12px">📎 Đồng bộ đơn hàng CHỜ XÁC NHẬN</div>
-      <div
-        id="comboBulkDropzonePending"
-        style="border:1.5px dashed rgba(186,214,253,.65);border-radius:18px;padding:16px 14px;text-align:center;background:rgba(255,255,255,.42);cursor:pointer;margin-bottom:10px"
-        onclick="document.getElementById('comboBulkInputPending').click()"
-        ondragover="event.preventDefault(); event.stopPropagation(); this.classList.add('dragover')"
-        ondragleave="event.stopPropagation(); this.classList.remove('dragover')"
-        ondrop="handleComboBulkDropPending(event)"
-      >
-        <div style="font-size:13px;font-weight:700;color:#570301">📂 Kéo thả nhiều file Excel vào đây</div>
-        <div style="font-size:11px;color:#a06070;margin-top:4px">
-          File sẽ được gán theo thứ tự shop: file đầu là shop đầu tiên, file thứ 2 là shop tiếp theo...
-        </div>
-        <div style="font-size:11px;color:#9b8bb4;margin-top:6px">
-          Ví dụ: <code>danh-sach-don-hang.xlsx</code>, <code>danh-sach-don-hang (1).xlsx</code>, ...
-        </div>
-      </div>
-      <input type="file" id="comboBulkInputPending" accept=".xlsx,.xls" multiple style="display:none"
-             onchange="handleComboBulkFilesPending(this.files)"/>
-      <div id="comboBulkSummaryPending" style="font-size:12px;color:#a06070;margin-bottom:12px;min-height:18px"></div>
-      <div class="sync-shop-panel collapsible-panel collapsed" id="comboShopListPanelPending">
-        <div class="panel-chrome">
-          <div class="panel-window-controls">
-            <button class="panel-dot panel-dot-red" type="button" aria-hidden="true"></button>
-            <button class="panel-dot panel-dot-yellow" type="button" onclick="togglePanelCollapse('comboShopListPanelPending')" title="Thu gọn / mở rộng"></button>
-            <button class="panel-dot panel-dot-green" type="button" aria-hidden="true"></button>
-          </div>
-          <div class="panel-inline-title">Danh sách các gian hàng</div>
-        </div>
-        <div class="panel-body">
-          <div id="comboRowsPending" style="display:flex;border-radius:50px;flex-direction:column;gap:8px;"></div>
-        </div>
-      </div>
-      <button class="btn-info-search" id="btnComboSyncPending"
-              style="margin-top:12px;width:100%;background:linear-gradient(to right,#ffc3a0,#ffafbd);color:#1e3a5f;box-shadow:0 4px 14px rgba(255,175,189,.4)"
-              onclick="doComboSyncPending()">
-        🔁 SYNC
-      </button>
-      <div class="info-error" id="comboMsgPending" style="margin-top:8px"></div>
-    </div>
-  </div>
-</div>
-</div>
-</div>
 </div>
 
 <div class="container">
 <!-- ── Chart Section ── -->
-<div class="chart-card collapsible-panel collapsed" id="chartPanel">
-  <div class="panel-chrome">
-    <div class="panel-window-controls">
-      <button class="panel-dot panel-dot-red" type="button" aria-hidden="true"></button>
-      <button class="panel-dot panel-dot-yellow" type="button" onclick="togglePanelCollapse('chartPanel')" title="Thu gọn / mở rộng"></button>
-      <button class="panel-dot panel-dot-green" type="button" aria-hidden="true"></button>
-    </div>
-    <div class="panel-inline-title">Thống kê đơn hàng tồn kho chưa xuất hàng</div>
-  </div>
-  <div class="panel-body">
-    <div class="chart-toolbar">
-      <div class="chart-title">📊 Thống kê đơn hàng tồn kho chưa xuất hàng</div>
-      <div class="chart-tabs">
-        <div class="chart-tab active" id="chartTabDate" onclick="switchChart('date')">📅 Thống kê theo ngày</div>
-        <div class="chart-tab" id="chartTabShop" onclick="switchChart('shop')">🏪 Thống kê theo shop</div>
-      </div>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="mainChart"></canvas>
-    </div>
-  </div>
-</div>
-
 <div class="product-search-wrap">
   <div class="product-search-box">
     <span style="font-size:18px">🔎</span>
@@ -3442,23 +3097,21 @@ let currentPage = 1;
 const limit = 200;
 let hanoiVisible = false;
 let currentSort = 'default';
-let currentSyncStage = '';
 let activeExternalOrderCode = '';
-let activeExternalScope = 'phuong';
+let activeExternalScope = 'hoang';
 let lastSyncDelta = null;
 window.shopIdNameMap = {};
 window.userCapabilities = {};
 window.externalOrdersData = [];
 window.externalOrdersConfig = { fee_items: [], payment_history: [] };
 window.externalOrdersState = {
-  phuong: { items: [], config: { fee_items: [], payment_history: [] } },
   hoang: { items: [], config: { fee_items: [], payment_history: [] } }
 };
 window.takenOrdersState = { items: [], manage: false, loaded: false };
 window.latestTakenOrderId = null;
 
 function getExternalScopeLabel(scope = activeExternalScope) {
-  return scope === 'hoang' ? "Hoàng's Order" : "Phương's Order";
+  return "Hoàng's Order";
 }
 
 function hasCapability(name) {
@@ -3516,7 +3169,6 @@ function updateTableSyncInfo(latestSync) {
 }
 
 function canViewExternalScope(scope = activeExternalScope, id = localStorage.getItem(ID_KEY) || '') {
-  if (scope !== 'hoang') return true;
   return hasCapability('view_hoang_orders');
 }
 
@@ -3735,10 +3387,6 @@ function updateExternalOrdersAccess(id = localStorage.getItem(ID_KEY) || '') {
   const canConfig = canConfigExternalOrders(id) && canViewExternalScope(activeExternalScope, id);
   const toggleBtn = document.getElementById('externalConfigToggleBtn');
   const configPanel = document.getElementById('externalConfigPanel');
-  const btnPhuong = document.getElementById('externalScopeBtnPhuong');
-  const btnHoang = document.getElementById('externalScopeBtnHoang');
-  if (btnPhuong) btnPhuong.classList.toggle('active', activeExternalScope === 'phuong');
-  if (btnHoang) btnHoang.classList.toggle('active', activeExternalScope === 'hoang');
   if (toggleBtn) {
     toggleBtn.style.display = canConfig ? 'inline-flex' : 'none';
   }
@@ -3748,16 +3396,15 @@ function updateExternalOrdersAccess(id = localStorage.getItem(ID_KEY) || '') {
 }
 
 function switchExternalScope(scope) {
-  const nextScope = scope === 'hoang' ? 'hoang' : 'phuong';
-  activeExternalScope = nextScope;
+  activeExternalScope = 'hoang';
   activeExternalOrderCode = '';
   closeExternalTrackModal();
   hydrateActiveExternalState();
   updateExternalOrdersAccess();
   hydrateExternalOrdersInput();
   renderExternalOrdersDashboard();
-  if (canViewExternalScope(nextScope)) {
-    loadExternalOrders(nextScope);
+  if (canViewExternalScope(activeExternalScope)) {
+    loadExternalOrders(activeExternalScope);
   }
 }
 
@@ -3956,8 +3603,8 @@ function renderExternalOrdersDashboard() {
   const deliveredRevenueEl = document.getElementById('externalDeliveredRevenue');
   const feeAmountEl = document.getElementById('externalFeeAmount');
   const feeContentEl = document.getElementById('externalFeeContent');
-  const payoutEl = document.getElementById('externalPayoutToPhuong');
-  const paidToPhuongEl = document.getElementById('externalPaidToPhuong');
+  const payoutEl = document.getElementById('externalCurrentBalance');
+  const paidToPhuongEl = document.getElementById('externalPaidAmount');
   const paymentHistoryEl = document.getElementById('externalPaymentHistoryContent');
   if (!grid || !meta || !permission || !inTransitEl || !deliveredEl || !returnedEl || !inTransitRevenueEl || !deliveredRevenueEl || !feeAmountEl || !feeContentEl || !payoutEl || !paidToPhuongEl || !paymentHistoryEl) return;
 
@@ -4205,15 +3852,13 @@ async function init() {
       loadOrders(),
       loadTakenOrders(),
       loadExternalOrders(),
-      loadSyncShops(),
-      loadSyncShopsPending()
+      loadSyncShops()
     ]);
     if (summaryData && summaryData.shops) {
       fetchAndUpdateShopNames(summaryData.shops);
     }
     loadHanoi();
     loadNuocHoa();
-    loadChartData();
     initHistoryBtn();
     loadMienBac();
   } catch(e) {
@@ -4226,7 +3871,6 @@ async function init() {
     loadOrders();
     loadHanoi();
     loadNuocHoa();
-    loadChartData();
     loadMienBac();
     loadExternalOrders();
     loadTakenOrders({ silent: true });
@@ -4235,7 +3879,7 @@ async function init() {
 
 async function loadSummary() {
   try {
-    const data = await fetch(`/api/summary?sync_stage=${encodeURIComponent(currentSyncStage)}`).then(r => r.json());
+    const data = await fetch('/api/summary').then(r => r.json());
     document.getElementById('totalOrders').textContent = data.total_orders.toLocaleString('vi');
     document.getElementById('totalShops').textContent  = data.total_shops;
     document.getElementById('tabAll').textContent      = data.total_orders.toLocaleString('vi');
@@ -4253,14 +3897,6 @@ async function loadSummary() {
       div.innerHTML = `${s.shop_name || s.shop_id} <span class="badge">${s.order_count}</span>`;
       tabs.appendChild(div);
     });
-
-    fetch('/api/summary')
-      .then(r => r.json())
-      .then(statsRes => {
-        const waitItem = statsRes.by_status?.find(s =>
-          s.status && s.status.toLowerCase().includes('wait'));
-      })
-      .catch(() => {})
 
     return data;
   } catch(e) {
@@ -4841,7 +4477,6 @@ async function loadOrders() {
     let url = `api/orders?page=${currentPage}&limit=${limit}`;
     if (currentShop) url += `&shop_id=${currentShop}`;
     if (currentSort !== 'default') url += `&sort=${currentSort}`;
-    if (currentSyncStage) url += `&sync_stage=${encodeURIComponent(currentSyncStage)}`;
 
     const response = await fetch(url, {
       headers: {
@@ -5400,11 +5035,7 @@ function selectShop(id) {
   document.querySelectorAll('.tab').forEach(t =>
     t.classList.toggle('active', t.dataset.id === id));
   loadSummary();
-  if (currentOrderTab === 'delivering') {
-  loadDeliveringOrders();
-} else {
   loadOrders();
-}
 }
 
 function showBlockedNotice(shopId) {
@@ -5416,15 +5047,6 @@ function showBlockedNotice(shopId) {
     document.querySelectorAll('.tab').forEach(t =>
       t.classList.toggle('active', t.dataset.id === ''));
   }, 3000);
-}
-
-async function manualSync() {
-  const btn = document.getElementById('syncBtn');
-  btn.disabled = true; btn.textContent = '⏳ Đang sync...';
-  await fetch('/api/sync', { method: 'POST' });
-  showToast('🔄 Đang quét toàn bộ gian hàng. Dữ liệu sẽ cập nhật trong 1-2 phút!');
-  setTimeout(() => { loadSummary(); loadOrders(); loadHanoi(); }, 15_000);
-  setTimeout(() => { btn.disabled = false; btn.textContent = '🔄 Sync ngay'; }, 20_000);
 }
 
 function showLoading(v) {
@@ -5440,13 +5062,10 @@ function togglePanelCollapse(panelId) {
   const panel = document.getElementById(panelId);
   if (!panel) return;
   panel.classList.toggle('collapsed');
-  if (panelId === 'chartPanel' && !panel.classList.contains('collapsed') && typeof chartMode !== 'undefined' && chartRawData) {
-    setTimeout(() => renderChart(chartMode), 120);
-  }
 }
 
 function collapseDefaultPanels() {
-  ['externalOrdersPanel', 'chartPanel'].forEach(panelId => {
+  ['externalOrdersPanel'].forEach(panelId => {
     const panel = document.getElementById(panelId);
     if (panel) panel.classList.add('collapsed');
   });
@@ -5468,7 +5087,6 @@ function updateAdminOnlyPanels(id = localStorage.getItem(ID_KEY) || '') {
   const showAdminPanels = isAdminId(id);
   const curlPanel = document.getElementById('adminCurlPanel');
   const syncPanel = document.getElementById('syncPanel');
-  const syncPanelPending = document.getElementById('syncPanelPending');
   const curlResultBg = document.getElementById('curlResultBg');
   const externalWrap = document.querySelector('.external-orders-wrap');
 
@@ -5477,9 +5095,6 @@ function updateAdminOnlyPanels(id = localStorage.getItem(ID_KEY) || '') {
   }
   if (syncPanel) {
     syncPanel.style.display = showAdminPanels ? 'flex' : 'none';
-  }
-  if (syncPanelPending) {
-    syncPanelPending.style.display = showAdminPanels ? 'flex' : 'none';
   }
   if (!showAdminPanels && curlResultBg) {
     curlResultBg.style.display = 'none';
@@ -5682,132 +5297,6 @@ function changeId() {
   window.takenOrdersState = { items: [], manage: false, loaded: true };
   window.latestTakenOrderId = null;
   location.reload();
-}
-
-let mainChart = null;
-let chartMode = 'date';
-let chartRawData = null;
-
-const CHART_COLORS = [
-  '#BAD6FD','#F5BAD5','#F7E594','#570301','#BAD6FD',
-  '#F5BAD5','#F7E594','#BAD6FD','#F7E594','#F5BAD5'
-];
-
-async function loadChartData() {
-  try {
-    const data = await fetch('/api/chart-data').then(r => r.json());
-    chartRawData = data;
-    renderChart(chartMode);
-  } catch(e) { console.error('chart error:', e); }
-}
-
-function switchChart(mode) {
-  chartMode = mode;
-  document.getElementById('chartTabDate').classList.toggle('active', mode === 'date');
-  document.getElementById('chartTabShop').classList.toggle('active', mode === 'shop');
-  if (chartRawData) renderChart(mode);
-}
-
-function renderChart(mode) {
-  const ctx = document.getElementById('mainChart').getContext('2d');
-  if (mainChart) { mainChart.destroy(); mainChart = null; }
-
-  if (mode === 'date') {
-    const raw    = (chartRawData.by_date || []).slice(-10);
-    const labels = raw.map(d => {
-      const p = d.date ? d.date.split(/[-\/]/) : [];
-      return p.length >= 3 ? `${p[2]}/${p[1]}` : d.date;
-    });
-    const values = raw.map(d => d.count);
-
-    mainChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Số đơn',
-          data: values,
-          backgroundColor: 'rgba(167,139,250,.45)',
-          borderColor: '#a78bfa',
-          borderWidth: 2,
-          borderRadius: 8,
-          borderSkipped: false,
-          hoverBackgroundColor: 'rgba(167,139,250,.7)',
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(255,255,255,.9)',
-            titleColor: '#3b3551', bodyColor: '#7c6fa0',
-            borderColor: 'rgba(198,181,255,.5)', borderWidth: 1,
-            padding: 10, cornerRadius: 10,
-            callbacks: { label: ctx => ` ${ctx.parsed.y} đơn hàng` }
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#9b8bb4', font: { size: 10 }, maxRotation: 45 }
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(198,181,255,.15)' },
-            ticks: { color: '#9b8bb4', font: { size: 10 }, precision: 0 }
-          }
-        }
-      }
-    });
-
-  } else {
- 
-    const raw    = (chartRawData.by_shop || []).slice(0, 55);
-    const labels = raw.map(d => d.shop || 'Unknown');
-    const values = raw.map(d => d.count);
-
-    mainChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          backgroundColor: CHART_COLORS.map(c => c + 'bb'),
-          borderColor: CHART_COLORS,
-          borderWidth: 2,
-          hoverOffset: 8,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        cutout: '62%',
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              color: '#4c3f72', font: { size: 11 },
-              padding: 14, boxWidth: 12, boxHeight: 12,
-              usePointStyle: true, pointStyle: 'circle', pointStyleWidth: 10,
-            }
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255,255,255,.9)',
-            titleColor: '#3b3551', bodyColor: '#7c6fa0',
-            borderColor: 'rgba(198,181,255,.5)', borderWidth: 1,
-            padding: 10, cornerRadius: 10,
-            callbacks: {
-              label: ctx => {
-                const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
-                const pct   = ((ctx.parsed / total) * 100).toFixed(1);
-                return ` ${ctx.parsed} đơn (${pct}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
 }
 
 function initHistoryBtn() {
@@ -6046,28 +5535,6 @@ async function searchProductOrders(forceOpen = false) {
 }
 
 
-// ── Tab Chờ lấy hàng / Đang giao ──────────────────────────
-let currentOrderTab = 'waiting';
-
-function switchOrderTab(tab) {
-  currentOrderTab = tab;
-  const btnW = document.getElementById('tabWaiting');
-  const btnD = document.getElementById('tabDelivering');
- 
-  const activeStyle = 'padding:7px 20px;border-radius:20px;border:1px solid transparent;cursor:pointer;background:linear-gradient(135deg,#d8b4fe,#a78bfa);color:#fff;font-weight:700;font-size:12px;font-family:inherit;box-shadow:0 3px 12px rgba(167,139,250,.35);';
-  const inactiveStyle = 'padding:7px 20px;border-radius:20px;border:1px solid rgba(198,181,255,.4);cursor:pointer;background:rgba(255,255,255,.4);color:#7c6fa0;font-weight:700;font-size:12px;font-family:inherit;';
-
-  btnW.style.cssText = tab === 'waiting'    ? activeStyle : inactiveStyle;
-  btnD.style.cssText = tab === 'delivering' ? activeStyle : inactiveStyle;
-  
-  if (tab === 'waiting') {
-    currentPage = 1;
-    loadOrders();
-  } else if (tab === 'delivering') {
-    loadDeliveringOrders();
-  } 
-}
-
 let mienBacVisible = false;
 
 window.mienBacData = [];
@@ -6239,1028 +5706,54 @@ function toggleMienBacPanel() {
   }
 }
 
-async function doSync() {
-  const shopId      = document.getElementById('syncShopId').value.trim();
-  const cfChlTk     = document.getElementById('syncCfChlTk').value.trim();
-  const cfClearance = document.getElementById('syncCfClearance').value.trim();
-  const btn         = document.getElementById('btnSync');
-  const msg         = document.getElementById('syncMsg');
-
-  msg.className = 'sync-msg';
-  msg.style.display = 'none';
-
-  if (!shopId) {
-    msg.textContent = 'Vui lòng chọn gian hàng.';
-    msg.className = 'sync-msg err'; return;
-  }
-  if (!cfChlTk || !cfClearance) {
-    msg.textContent = 'Vui lòng điền đủ __cf_chl_tk và cf_clearance.';
-    msg.className = 'sync-msg err'; return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Đang sync...';
-
-  try {
-    const res = await fetch('/api/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ shop_id: shopId, cf_chl_tk: cfChlTk, cf_clearance: cfClearance })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      lastSyncDelta = {
-        added: Number(data.added_count || 0),
-        removed: Number(data.removed_count || 0)
-      };
-      msg.textContent = `✅ ${data.shop_name}: đã sync ${data.synced} đơn · Đơn đặt hàng mới: +${lastSyncDelta.added} · Đơn đã bàn giao ĐVVC/huỷ: -${lastSyncDelta.removed}`;
-      msg.className = 'sync-msg ok';
-      // Reload bảng đơn hàng
-      currentPage = 1;
-      await loadOrders();
-      await loadSummary();
-    } else {
-      msg.textContent = `❌ ${data.error || 'Lỗi không xác định'}`;
-      msg.className = 'sync-msg err';
-    }
-  } catch (e) {
-    msg.textContent = `❌ Lỗi kết nối: ${e.message}`;
-    msg.className = 'sync-msg err';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🔄 SYNC NOW';
-  }
-}
-
-const SYNC_PANEL_CONFIG = {
-  waiting: {
-    shops: () => syncShops,
-    messageId: 'syncMsg',
-    selectId: 'syncShopId',
-    fileNameId: 'syncFileName',
-    linkButtonId: 'chiakiLink',
-    bulkSummaryId: 'comboBulkSummary',
-  },
-  pending: {
-    shops: () => pendingSyncShops,
-    messageId: 'syncMsgPending',
-    selectId: 'syncShopIdPending',
-    fileNameId: 'syncFileNamePending',
-    linkButtonId: 'chiakiLinkPending',
-    bulkSummaryId: 'comboBulkSummaryPending',
-  }
-};
-
-function getSyncPanelConfig(stage) {
-  return SYNC_PANEL_CONFIG[stage];
-}
-
-function updateChiakiLinkByStage(stage) {
-  const config = getSyncPanelConfig(stage);
-  const select = document.getElementById(config.selectId);
-  const shops = config.shops();
-  if (select && !select.value && shops.length) {
-    select.value = shops[0].id;
-  }
-}
-
-function updateChiakiLink() {
-  updateChiakiLinkByStage('waiting');
-}
-
-function updateChiakiLinkPending() {
-  updateChiakiLinkByStage('pending');
-}
-
-let syncFile = null;
-function handleSyncDrop(event) {
-  event.preventDefault();
-  document.getElementById('syncDropzone').classList.remove('dragover');
-  const file = event.dataTransfer.files[0];
-  if (file) handleSyncFile(file);
-}
-  
-function handleSyncFileByStage(stage, file) {
-  if (!file) return;
-  const config = getSyncPanelConfig(stage);
-  if (stage === 'waiting') {
-    syncFile = file;
-  }
-  if (stage === 'pending') {
-    pendingSyncFile = file;
-  }
-  const nameEl = document.getElementById(config.fileNameId);
-  if (nameEl) nameEl.textContent = `📄 ${file.name}`;
-  if (stage === 'waiting') {
-    const btnSync = document.getElementById('btnSync');
-    if (btnSync) btnSync.disabled = false;
-  }
-}
-
-function handleSyncFile(file) {
-  handleSyncFileByStage('waiting', file);
-}
-
-function handleSyncFilePending(file) {
-  handleSyncFileByStage('pending', file);
-}
- 
-async function doSyncUpload() {
-  const shopId = document.getElementById('syncShopId').value.trim();
-  const btn    = document.getElementById('btnSync');
-  const msg    = document.getElementById('syncMsg');
-
-  msg.className = 'sync-msg';
-
-  if (!shopId) {
-    msg.textContent = 'Vui lòng chọn gian hàng.';
-    msg.className = 'sync-msg err'; return;
-  }
-  if (!syncFile) {
-    msg.textContent = 'Vui lòng chọn file Excel.';
-    msg.className = 'sync-msg err'; return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Đang upload & parse...';
-
-  const formData = new FormData();
-  formData.append('shop_id', shopId);
-  formData.append('sync_stage', 'waiting');
-  formData.append('file', syncFile);
-
-  try {
-    const res = await fetch('/api/sync-upload', { method: 'POST', body: formData });
-    const data = await res.json();
-    if (data.ok) {
-      lastSyncDelta = {
-        added: Number(data.added_count || 0),
-        removed: Number(data.removed_count || 0)
-      };
-      msg.textContent = `✅ ${data.shop_name}: sync ${data.synced} đơn thành công · Đơn đặt hàng mới: +${lastSyncDelta.added} · Đơn đã bàn giao ĐVVC/huỷ: -${lastSyncDelta.removed}`;
-      msg.className = 'sync-msg ok';
-      // Reset file
-      syncFile = null;
-      document.getElementById('syncFileName').textContent = '';
-      document.getElementById('syncFileInput').value = '';
-      btn.disabled = true;
-      // Reload bảng
-      currentPage = 1;
-      await loadOrders();
-      await loadSummary();
-    } else {
-      msg.textContent = `❌ ${data.error || 'Lỗi không xác định'}`;
-      msg.className = 'sync-msg err';
-    }
-  } catch (e) {
-    msg.textContent = `❌ Lỗi kết nối: ${e.message}`;
-    msg.className = 'sync-msg err';
-  } finally {
-    btn.disabled = !syncFile;
-    btn.textContent = '🔄 SYNC NOW';
-  }
-}
-
 let syncShops = [];
-let comboFileMap = {}; // index → File
-let syncDownloadTimer = null;
-let syncDownloadRunning = false;
-let pendingSyncShops = [];
-let pendingComboFileMap = {};
-let pendingSyncFile = null;
-let pendingSyncDownloadTimer = null;
-let pendingSyncDownloadRunning = false;
-let shopDownloadPopup = null;
-let activeShopDownloadSession = null;
-
-function isAnyShopDownloadRunning() {
-  return syncDownloadRunning || pendingSyncDownloadRunning;
-}
-
-function getShopDownloadStageLabel(stage) {
-  return stage === 'pending' ? 'CHỜ XÁC NHẬN' : 'CHỜ LẤY HÀNG';
-}
-
-function buildShopDownloadProxyUrl(stage, shopId) {
-  const status = stage === 'pending' ? 'pending' : 'waiting';
-  return `/api/sync-download-file?shop_id=${encodeURIComponent(shopId)}&status=${encodeURIComponent(status)}`;
-}
-
-function closeShopDownloadModal() {
-  if (isAnyShopDownloadRunning()) return;
-  const modal = document.getElementById('shopDownloadModal');
-  if (modal) modal.classList.remove('show');
-}
-
-function renderShopDownloadModal({
-  stage,
-  total = 0,
-  currentIndex = -1,
-  currentShop = null,
-  nextShop = null,
-  phase = 'idle',
-  message = ''
-} = {}) {
-  const modal = document.getElementById('shopDownloadModal');
-  const sub = document.getElementById('shopDownloadModalSub');
-  const status = document.getElementById('shopDownloadModalStatus');
-  const rows = document.getElementById('shopDownloadModalRows');
-  const note = document.getElementById('shopDownloadModalNote');
-  const progressBar = document.getElementById('shopDownloadProgressBar');
-  const closeBtn = document.getElementById('shopDownloadModalClose');
-  const reopenBtn = document.getElementById('shopDownloadOpenBtn');
-  const nextBtn = document.getElementById('shopDownloadNextBtn');
-  const stopBtn = document.getElementById('shopDownloadStopBtn');
-  if (!modal || !sub || !status || !rows || !note || !progressBar || !closeBtn || !reopenBtn || !nextBtn || !stopBtn) return;
-
-  const stageLabel = getShopDownloadStageLabel(stage);
-  sub.textContent = `Popup trình duyệt sẽ mở tuần tự link GET cho danh sách đơn ${stageLabel} để bạn vượt Cloudflare thủ công.`;
-
-  if (phase === 'done') {
-    status.textContent = `Hoàn tất ${total}/${total}`;
-  } else if (phase === 'error') {
-    status.textContent = currentIndex >= 0 ? `Bị gián đoạn tại ${currentIndex + 1}/${total}` : 'Bị gián đoạn';
-  } else if (phase === 'active') {
-    status.textContent = `Đang mở ${Math.min(currentIndex + 1, total)}/${total}`;
-  } else {
-    status.textContent = 'Sẵn sàng tải';
-  }
-
-  const progress = total > 0 && currentIndex >= 0
-    ? Math.max(0, Math.min(100, Math.round(((currentIndex + 1) / total) * 100)))
-    : 0;
-  progressBar.style.width = `${phase === 'done' ? 100 : progress}%`;
-
-  const currentLabel = currentShop ? `${currentShop.id} · ${currentShop.name}` : (phase === 'done' ? 'Đã mở xong toàn bộ' : '—');
-  const nextLabel = nextShop ? `${nextShop.id} · ${nextShop.name}` : 'Không còn shop tiếp theo';
-  const currentFileName = currentShop?.fileName || '—';
-  rows.innerHTML = [
-    ['Danh sách', `Đơn ${stageLabel}`],
-    ['Vị trí hiện tại', currentIndex >= 0 && total > 0 ? `${currentIndex + 1}/${total}` : `0/${total || 0}`],
-    ['Đang mở popup', currentLabel],
-    ['Tên mong muốn', currentFileName],
-    ['Kế tiếp', nextLabel],
-  ].map(([label, value]) => `
-    <div class="mobile-detail-row">
-      <div class="mobile-detail-label">${escapeTextHtml(label)}</div>
-      <div class="mobile-detail-value">${escapeTextHtml(value)}</div>
-    </div>
-  `).join('');
-
-  note.textContent = message || 'Nếu Cloudflare hiện ra trong popup, hãy xác minh xong rồi bấm mở shop tiếp theo.';
-  note.classList.add('show');
-  closeBtn.disabled = phase === 'active';
-  closeBtn.style.opacity = closeBtn.disabled ? '.45' : '1';
-  closeBtn.style.cursor = closeBtn.disabled ? 'not-allowed' : 'pointer';
-  reopenBtn.disabled = !currentShop;
-  nextBtn.disabled = phase === 'idle';
-  nextBtn.textContent = phase === 'done' ? 'Đóng phiên' : (nextShop ? 'Mở shop tiếp theo' : 'Hoàn tất');
-  stopBtn.style.display = phase === 'done' ? 'none' : '';
-  modal.classList.add('show');
-}
-
-function openCenteredShopDownloadPopup(url) {
-  const width = Math.min(1280, Math.max(980, Math.round(window.screen.availWidth * 0.78)));
-  const height = Math.min(900, Math.max(720, Math.round(window.screen.availHeight * 0.88)));
-  const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
-  const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
-  const features = `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
-  const popup = (!shopDownloadPopup || shopDownloadPopup.closed)
-    ? window.open(url, 'chiakiShopDownloadPopup', features)
-    : shopDownloadPopup;
-
-  if (!popup) {
-    throw new Error('Trình duyệt đã chặn popup. Hãy cho phép popup cho trang này rồi thử lại.');
-  }
-
-  if (popup !== shopDownloadPopup) {
-    shopDownloadPopup = popup;
-  } else {
-    popup.location.href = url;
-  }
-  try { popup.focus(); } catch (_) {}
-  return popup;
-}
-
-async function copyTextToClipboard(text) {
-  const normalizedText = String(text || '').trim();
-  if (!normalizedText) return false;
-
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(normalizedText);
-      return true;
-    }
-  } catch (_) {}
-
-  try {
-    const el = document.createElement('textarea');
-    el.value = normalizedText;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-async function openShopDownloadPopupForShop(shop) {
-  openCenteredShopDownloadPopup(shop.url);
-  return copyTextToClipboard(shop.name);
-}
-
-function getActiveShopDownloadItem() {
-  if (!activeShopDownloadSession) return null;
-  return activeShopDownloadSession.queue[activeShopDownloadSession.index] || null;
-}
-
-function updateActiveShopDownloadModal(message = '') {
-  if (!activeShopDownloadSession) return;
-  const { stage, queue, index } = activeShopDownloadSession;
-  renderShopDownloadModal({
-    stage,
-    total: queue.length,
-    currentIndex: index,
-    currentShop: queue[index] || null,
-    nextShop: queue[index + 1] || null,
-    phase: 'active',
-    message: message || 'Nếu Cloudflare hiện ra trong popup, hãy xác minh xong rồi bấm mở shop tiếp theo.'
-  });
-}
-
-function finishShopDownloadSession(message, type = 'ok', phase = 'done') {
-  const session = activeShopDownloadSession;
-  if (!session) return;
-  const { stage, queue, index } = session;
-  renderShopDownloadModal({
-    stage,
-    total: queue.length,
-    currentIndex: index,
-    currentShop: queue[index] || null,
-    nextShop: null,
-    phase,
-    message
-  });
-  activeShopDownloadSession = null;
-  finishDownloadAllShopsByStage(stage, message, type);
-}
-
-async function reopenCurrentShopDownloadPopup() {
-  const currentShop = getActiveShopDownloadItem();
-  if (!currentShop) return;
-  try {
-    const copied = await openShopDownloadPopupForShop(currentShop);
-    updateActiveShopDownloadModal(`Đã mở lại popup cho ${currentShop.id} · ${currentShop.name}.${copied ? ` Đã tự copy tên shop: ${currentShop.name}.` : ' Không tự copy được tên shop vào clipboard.'} Hãy xử lý Cloudflare trong popup này.`);
-  } catch (error) {
-    finishShopDownloadSession(error.message, 'err', 'error');
-  }
-}
-
-async function advanceShopDownloadSession() {
-  if (!activeShopDownloadSession) {
-    closeShopDownloadModal();
-    return;
-  }
-
-  const { queue } = activeShopDownloadSession;
-  if (activeShopDownloadSession.index >= queue.length - 1) {
-    finishShopDownloadSession(`Đã mở xong ${queue.length}/${queue.length} shop trong popup giữa màn hình.`, 'ok', 'done');
-    return;
-  }
-
-  activeShopDownloadSession.index += 1;
-  const currentShop = getActiveShopDownloadItem();
-  try {
-    const copied = await openShopDownloadPopupForShop(currentShop);
-    const config = getSyncPanelConfig(activeShopDownloadSession.stage);
-    const btn = document.getElementById(config.linkButtonId);
-    if (btn) btn.textContent = `⏳ Đang mở ${activeShopDownloadSession.index + 1}/${queue.length}...`;
-    updateActiveShopDownloadModal(`Đã chuyển sang ${currentShop.id} · ${currentShop.name}.${copied ? ` Đã tự copy tên shop: ${currentShop.name}.` : ' Không tự copy được tên shop vào clipboard.'} Nếu Cloudflare hiện ra, hãy xác minh rồi tiếp tục.`);
-    const setMessage = activeShopDownloadSession.stage === 'pending' ? setSyncMessagePending : setSyncMessage;
-    setMessage(`Đã mở popup shop ${activeShopDownloadSession.index + 1}/${queue.length}: ${currentShop.id} · ${currentShop.name}.${copied ? ` Đã copy tên shop.` : ''}`, 'ok');
-  } catch (error) {
-    finishShopDownloadSession(error.message, 'err', 'error');
-  }
-}
-
-function cancelShopDownloadSession() {
-  const session = activeShopDownloadSession;
-  if (!session) {
-    closeShopDownloadModal();
-    return;
-  }
-  if (shopDownloadPopup && !shopDownloadPopup.closed) {
-    try { shopDownloadPopup.close(); } catch (_) {}
-  }
-  shopDownloadPopup = null;
-  activeShopDownloadSession = null;
-  finishDownloadAllShopsByStage(session.stage, 'Đã dừng phiên mở popup tải file.', 'err');
-  closeShopDownloadModal();
-}
-
-function getDownloadFileNameFromHeader(contentDisposition = '') {
-  const utfMatch = String(contentDisposition || '').match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
-  if (utfMatch && utfMatch[1]) {
-    try {
-      return decodeURIComponent(utfMatch[1]);
-    } catch (_) {}
-  }
-
-  const plainMatch =
-    String(contentDisposition || '').match(/filename\s*=\s*"([^"]+)"/i) ||
-    String(contentDisposition || '').match(/filename\s*=\s*([^;]+)/i);
-  return plainMatch && plainMatch[1] ? plainMatch[1].trim() : '';
-}
-
-async function downloadSingleShopFile(stage, shop) {
-  const res = await fetch(buildShopDownloadProxyUrl(stage, shop.id), {
-    cache: 'no-store',
-    headers: { 'X-User-ID': localStorage.getItem('chiaki_id') || '' }
-  });
-  const blob = await res.blob();
-
-  if (!res.ok) {
-    const rawText = (await blob.text()).trim();
-    let message = `Không tải được file của shop ${shop.id} · ${shop.name}.`;
-    if (rawText) {
-      try {
-        const data = JSON.parse(rawText);
-        message = data.error || data.message || message;
-      } catch (_) {
-        message = rawText.length > 240 ? `${rawText.slice(0, 240)}...` : rawText;
-      }
-    }
-    throw new Error(message);
-  }
-
-  const objectUrl = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = objectUrl;
-  link.download =
-    getDownloadFileNameFromHeader(res.headers.get('content-disposition')) ||
-    shop.fileName ||
-    `${shop.id}_${shop.name}.xlsx`;
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 15000);
-}
-
-function getComboFileSequence(fileName = '') {
-  const normalized = String(fileName || '').trim();
-  const match = normalized.match(/\((\d+)\)/);
-  if (match) return parseInt(match[1], 10) + 1;
-  return 0;
-}
-
-function sortComboFiles(files) {
-  return [...files].sort((a, b) => {
-    const seqDiff = getComboFileSequence(a.name) - getComboFileSequence(b.name);
-    if (seqDiff !== 0) return seqDiff;
-    return String(a.name || '').localeCompare(String(b.name || ''), undefined, { numeric: true, sensitivity: 'base' });
-  });
-}
-
-function updateComboBulkSummaryByStage(stage, message = '', type = '') {
-  const config = getSyncPanelConfig(stage);
-  const summary = document.getElementById(config.bulkSummaryId);
-  if (!summary) return;
-  summary.textContent = message;
-  summary.style.color = type === 'err' ? '#dc2626' : '#a06070';
-}
-
-function updateComboBulkSummary(message = '', type = '') {
-  updateComboBulkSummaryByStage('waiting', message, type);
-}
-
-function updateComboBulkSummaryPending(message = '', type = '') {
-  updateComboBulkSummaryByStage('pending', message, type);
-}
 
 function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function populateSyncShopSelectByStage(stage) {
-  const config = getSyncPanelConfig(stage);
-  const select = document.getElementById(config.selectId);
-  if (!select) return;
-
-  const shops = config.shops();
-  const selected = select.value;
-  const options = shops.map(shop =>
-    `<option value="${escapeHtml(shop.id)}">${escapeHtml(shop.id)} · ${escapeHtml(shop.name)}</option>`
-  ).join('');
-
-  select.innerHTML = `<option value="">Mời chọn</option>${options}`;
-  if (shops.some(shop => shop.id === selected)) {
-    select.value = selected;
-  }
-  updateChiakiLinkByStage(stage);
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function populateSyncShopSelect() {
-  populateSyncShopSelectByStage('waiting');
-}
+  const select = document.getElementById("syncShopId");
+  if (!select) return;
 
-function populateSyncShopSelectPending() {
-  populateSyncShopSelectByStage('pending');
-}
+  const selected = select.value;
+  const options = syncShops.map(shop =>
+    '<option value="' + escapeHtml(shop.id) + '">' + escapeHtml(shop.id) + ' · ' + escapeHtml(shop.name) + '</option>'
+  ).join("");
 
-function setSyncMessageByStage(stage, message, type = '') {
-  const config = getSyncPanelConfig(stage);
-  const msg = document.getElementById(config.messageId);
-  if (!msg) return;
-  msg.textContent = message;
-  msg.className = type ? `sync-msg ${type}` : 'sync-msg';
-}
-
-function setSyncMessage(message, type = '') {
-  setSyncMessageByStage('waiting', message, type);
-}
-
-function setSyncMessagePending(message, type = '') {
-  setSyncMessageByStage('pending', message, type);
-}
-
-function finishDownloadAllShopsByStage(stage, message, type = 'ok') {
-  const config = getSyncPanelConfig(stage);
-  const btn = document.getElementById(config.linkButtonId);
-  const timer = stage === 'waiting' ? syncDownloadTimer : pendingSyncDownloadTimer;
-  if (stage === 'waiting') syncDownloadRunning = false;
-  else pendingSyncDownloadRunning = false;
-  if (timer) {
-    clearTimeout(timer);
-    if (stage === 'waiting') syncDownloadTimer = null;
-    else pendingSyncDownloadTimer = null;
+  select.innerHTML = '<option value="">Mời chọn</option>' + options;
+  if (syncShops.some(shop => shop.id === selected)) {
+    select.value = selected;
   }
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = '🔗 Tải toàn bộ shop';
-  }
-  setSyncMessageByStage(stage, message, type);
 }
 
-function finishDownloadAllShops(message, type = 'ok') {
-  finishDownloadAllShopsByStage('waiting', message, type);
-}
-
-function finishDownloadAllShopsPending(message, type = 'ok') {
-  finishDownloadAllShopsByStage('pending', message, type);
-}
-
-function downloadAllShopFilesByStage(stage) {
-  const isPending = stage === 'pending';
-  const btn = document.getElementById(isPending ? 'chiakiLinkPending' : 'chiakiLink');
-  const shops = isPending ? pendingSyncShops : syncShops;
-  const setMessage = isPending ? setSyncMessagePending : setSyncMessage;
-  const finish = (message, type = 'ok') => finishDownloadAllShopsByStage(stage, message, type);
-
-  if ((isPending ? pendingSyncDownloadRunning : syncDownloadRunning) || isAnyShopDownloadRunning()) {
-    setMessage('Đang có một đợt tải file khác chạy. Hãy chờ hoàn tất rồi thử lại.', 'err');
-    return;
-  }
-  if (!shops.length) {
-    setMessage('Chưa tải được danh sách shop để mở file.', 'err');
-    return;
-  }
-
-  if (isPending) pendingSyncDownloadRunning = true;
-  else syncDownloadRunning = true;
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Đang chuẩn bị tải...';
-  }
-
-  fetch(`/api/sync-download-links?status=${isPending ? 'pending' : 'receive_wating'}`, {
-    cache: 'no-store',
-    headers: { 'X-User-ID': localStorage.getItem('chiaki_id') || '' }
-  })
-    .then(r => r.json().then(data => ({ ok: r.ok, data })))
-    .then(async ({ ok, data }) => {
-      if (!ok) throw new Error(data.error || 'Không tải được link tải file');
-      const queue = Array.isArray(data.shops) ? data.shops.map(shop => ({
-        id: shop.shop_id,
-        name: shop.shop_name,
-        url: shop.download_url,
-        fileName: shop.file_name || `${shop.shop_id}_${shop.shop_name}.xlsx`
-      })) : [];
-      if (!queue.length) throw new Error('Không có shop để tải file.');
-
-      activeShopDownloadSession = { stage, queue, index: 0 };
-      try {
-        const copied = await openShopDownloadPopupForShop(queue[0]);
-        if (btn) btn.textContent = `⏳ Đang mở 1/${queue.length}...`;
-        updateActiveShopDownloadModal(`Đã mở popup cho ${queue[0].id} · ${queue[0].name}.${copied ? ` Đã tự copy tên shop: ${queue[0].name}.` : ' Không tự copy được tên shop vào clipboard.'} Hãy xử lý Cloudflare trong popup rồi bấm "Mở shop tiếp theo".`);
-        setMessage(`Đã mở popup shop 1/${queue.length}: ${queue[0].id} · ${queue[0].name}.${copied ? ` Đã copy tên shop.` : ''} Xử lý Cloudflare rồi bấm "Mở shop tiếp theo".`, 'ok');
-      } catch (error) {
-        activeShopDownloadSession = null;
-        throw error;
-      }
-    })
-    .catch(e => {
-      renderShopDownloadModal({
-        stage,
-        total: 0,
-        currentIndex: -1,
-        currentShop: null,
-        nextShop: null,
-        phase: 'error',
-        message: e.message
-      });
-      finish(e.message, 'err');
-    });
-}
-
-function downloadAllShopFiles() {
-  downloadAllShopFilesByStage('waiting');
-}
-
-function downloadAllShopFilesPending() {
-  downloadAllShopFilesByStage('pending');
-}
-
-async function loadSyncShopsByStage(stage) {
-  const isPending = stage === 'pending';
+async function loadSyncShops() {
   try {
-    const shopsRes = await fetch('/api/shops-list', { cache: 'no-store' });
+    const shopsRes = await fetch("/api/shops-list", { cache: "no-store" });
     const shopsData = shopsRes.ok ? await shopsRes.json() : [];
-
     const shopsPayload = Array.isArray(shopsData)
       ? shopsData
       : Array.isArray(shopsData?.shops)
         ? shopsData.shops
         : [];
-    const shops = shopsPayload.map(shop => ({
-      id: String(shop.shop_id || '').trim(),
-      name: String(shop.shop_name || shop.shop_id || '').trim()
+
+    syncShops = shopsPayload.map(shop => ({
+      id: String(shop.shop_id || "").trim(),
+      name: String(shop.shop_name || shop.shop_id || "").trim()
     })).filter(shop => shop.id);
-
-    if (isPending) {
-      pendingSyncShops = shops;
-      populateSyncShopSelectPending();
-      initComboRowsPending();
-    } else {
-      syncShops = shops;
-      window.shopIdNameMap = Object.fromEntries(syncShops.map(shop => [shop.id, shop.name]));
-      populateSyncShopSelect();
-      initComboRows();
-    }
+    window.shopIdNameMap = Object.fromEntries(syncShops.map(shop => [shop.id, shop.name]));
+    populateSyncShopSelect();
   } catch (e) {
-    console.error(`loadSyncShops(${stage}) error`, e);
-    const container = document.getElementById(isPending ? 'comboRowsPending' : 'comboRows');
-    if (isPending) {
-      pendingSyncShops = [];
-      populateSyncShopSelectPending();
-    } else {
-      syncShops = [];
-      window.shopIdNameMap = {};
-      populateSyncShopSelect();
-    }
-    if (container) {
-      container.innerHTML = '<div style="font-size:12px;color:#a06070;padding:8px 2px">Không tải được danh sách shop.</div>';
-    }
+    console.error("loadSyncShops error", e);
+    syncShops = [];
+    window.shopIdNameMap = {};
+    populateSyncShopSelect();
   }
-}
-
-async function loadSyncShops() {
-  await loadSyncShopsByStage('waiting');
-}
-
-async function loadSyncShopsPending() {
-  await loadSyncShopsByStage('pending');
-}
-
-function initComboRows() {
-  const container = document.getElementById('comboRows');
-  if (!container) return;
-  if (!syncShops.length) {
-    container.innerHTML = '<div style="font-size:12px;color:#a06070;padding:8px 2px">Không có shop để hiển thị.</div>';
-    updateComboBulkSummary('');
-    return;
-  }
-
-  container.innerHTML = syncShops.map((shop, i) => `
-    <div class="combo-row">
-      <div class="combo-shop-label" title="${escapeHtml(shop.id)} · ${escapeHtml(shop.name)}">
-        <span class="combo-shop-id">${escapeHtml(shop.id)}</span>
-        <span class="combo-shop-name">${escapeHtml(shop.name)}</span>
-      </div>
-      <div class="combo-drop-cell"
-           id="comboUploadBtn_${i}"
-           onclick="document.getElementById('comboInput_${i}').click()"
-           ondragover="event.preventDefault(); event.stopPropagation(); this.classList.add('dragover')"
-           ondragleave="event.stopPropagation(); this.classList.remove('dragover')"
-           ondrop="event.preventDefault(); event.stopPropagation(); this.classList.remove('dragover'); handleComboFile(${i}, event.dataTransfer.files[0])">
-        📎 Upload
-      </div>
-      <input type="file" id="comboInput_${i}" accept=".xlsx,.xls"
-             style="display:none"
-             onchange="handleComboFile(${i}, this.files[0])"/>
-    </div>
-  `).join('');
-  updateComboBulkSummary(Object.keys(comboFileMap).length ? `Đã gán ${Object.keys(comboFileMap).length}/${syncShops.length} file cho shop.` : '');
-}
-
-function initComboRowsPending() {
-  const container = document.getElementById('comboRowsPending');
-  if (!container) return;
-  if (!pendingSyncShops.length) {
-    container.innerHTML = '<div style="font-size:12px;color:#a06070;padding:8px 2px">Không có shop để hiển thị.</div>';
-    updateComboBulkSummaryPending('');
-    return;
-  }
-
-  container.innerHTML = pendingSyncShops.map((shop, i) => `
-    <div class="combo-row">
-      <div class="combo-shop-label" title="${escapeHtml(shop.id)} · ${escapeHtml(shop.name)}">
-        <span class="combo-shop-id">${escapeHtml(shop.id)}</span>
-        <span class="combo-shop-name">${escapeHtml(shop.name)}</span>
-      </div>
-      <div class="combo-drop-cell"
-           id="comboUploadBtnPending_${i}"
-           onclick="document.getElementById('comboInputPending_${i}').click()"
-           ondragover="event.preventDefault(); event.stopPropagation(); this.classList.add('dragover')"
-           ondragleave="event.stopPropagation(); this.classList.remove('dragover')"
-           ondrop="event.preventDefault(); event.stopPropagation(); this.classList.remove('dragover'); handleComboFilePending(${i}, event.dataTransfer.files[0])">
-        📎 Upload
-      </div>
-      <input type="file" id="comboInputPending_${i}" accept=".xlsx,.xls"
-             style="display:none"
-             onchange="handleComboFilePending(${i}, this.files[0])"/>
-    </div>
-  `).join('');
-  updateComboBulkSummaryPending(Object.keys(pendingComboFileMap).length ? `Đã gán ${Object.keys(pendingComboFileMap).length}/${pendingSyncShops.length} file cho shop.` : '');
-}
-  
-function handleComboFile(index, file) {
-  if (!file) return;
-  comboFileMap[index] = file;
-  const btn = document.getElementById(`comboUploadBtn_${index}`);
-  // Hiện tên file ngắn gọn tối đa 12 ký tự
-  const shortName = file.name.length > 14 ? file.name.slice(0,12) + '…' : file.name;
-  btn.textContent = `✅ ${shortName}`;
-  btn.classList.add('has-file');
-  updateComboBulkSummary(`Đã gán ${Object.keys(comboFileMap).length}/${syncShops.length} file cho shop.`);
-}
-
-function handleComboFilePending(index, file) {
-  if (!file) return;
-  pendingComboFileMap[index] = file;
-  const btn = document.getElementById(`comboUploadBtnPending_${index}`);
-  const shortName = file.name.length > 14 ? file.name.slice(0,12) + '…' : file.name;
-  btn.textContent = `✅ ${shortName}`;
-  btn.classList.add('has-file');
-  updateComboBulkSummaryPending(`Đã gán ${Object.keys(pendingComboFileMap).length}/${pendingSyncShops.length} file cho shop.`);
-}
-
-function handleComboBulkDrop(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  const zone = document.getElementById('comboBulkDropzone');
-  if (zone) zone.classList.remove('dragover');
-  handleComboBulkFiles(event.dataTransfer?.files || []);
-}
-
-function handleComboBulkDropPending(event) {
-  event.preventDefault();
-  event.stopPropagation();
-  const zone = document.getElementById('comboBulkDropzonePending');
-  if (zone) zone.classList.remove('dragover');
-  handleComboBulkFilesPending(event.dataTransfer?.files || []);
-}
-
-function handleComboBulkFiles(fileList) {
-  const files = sortComboFiles(Array.from(fileList || []).filter(file => /\.(xlsx|xls)$/i.test(file.name || '')));
-  if (!files.length) {
-    updateComboBulkSummary('Không có file Excel hợp lệ để gán.', 'err');
-    return;
-  }
-  if (!syncShops.length) {
-    updateComboBulkSummary('Chưa có danh sách shop để gán file.', 'err');
-    return;
-  }
-
-  comboFileMap = {};
-  const assignedCount = Math.min(files.length, syncShops.length);
-
-  for (let i = 0; i < syncShops.length; i++) {
-    const uploadBtn = document.getElementById(`comboUploadBtn_${i}`);
-    const input = document.getElementById(`comboInput_${i}`);
-    if (uploadBtn) {
-      uploadBtn.textContent = '📎 Upload';
-      uploadBtn.classList.remove('has-file');
-    }
-    if (input) input.value = '';
-  }
-
-  for (let i = 0; i < assignedCount; i++) {
-    handleComboFile(i, files[i]);
-  }
-
-  const skipped = files.length > syncShops.length ? files.length - syncShops.length : 0;
-  let message = `Đã gán ${assignedCount}/${syncShops.length} file theo thứ tự shop.`;
-  if (skipped > 0) {
-    message += ` Bỏ qua ${skipped} file dư.`;
-  }
-  updateComboBulkSummary(message, skipped ? 'err' : '');
-}
-
-function updateComboBulkSummaryPending(message = '', type = '') {
-  const summary = document.getElementById('comboBulkSummaryPending');
-  if (!summary) return;
-  summary.textContent = message;
-  summary.style.color = type === 'err' ? '#dc2626' : '#a06070';
-}
-
-function handleComboBulkFilesPending(fileList) {
-  const files = sortComboFiles(Array.from(fileList || []).filter(file => /\.(xlsx|xls)$/i.test(file.name || '')));
-  if (!files.length) {
-    updateComboBulkSummaryPending('Không có file Excel hợp lệ để gán.', 'err');
-    return;
-  }
-  if (!pendingSyncShops.length) {
-    updateComboBulkSummaryPending('Chưa có danh sách shop để gán file.', 'err');
-    return;
-  }
-
-  pendingComboFileMap = {};
-  const assignedCount = Math.min(files.length, pendingSyncShops.length);
-
-  for (let i = 0; i < pendingSyncShops.length; i++) {
-    const uploadBtn = document.getElementById(`comboUploadBtnPending_${i}`);
-    const input = document.getElementById(`comboInputPending_${i}`);
-    if (uploadBtn) {
-      uploadBtn.textContent = '📎 Upload';
-      uploadBtn.classList.remove('has-file');
-    }
-    if (input) input.value = '';
-  }
-
-  for (let i = 0; i < assignedCount; i++) {
-    handleComboFilePending(i, files[i]);
-  }
-
-  const skipped = files.length > pendingSyncShops.length ? files.length - pendingSyncShops.length : 0;
-  let message = `Đã gán ${assignedCount}/${pendingSyncShops.length} file theo thứ tự shop.`;
-  if (skipped > 0) {
-    message += ` Bỏ qua ${skipped} file dư.`;
-  }
-  updateComboBulkSummaryPending(message, skipped ? 'err' : '');
-}
-
-async function doComboSync() {
-  const btn  = document.getElementById('btnComboSync');
-  const msg  = document.getElementById('comboMsg');
-
-  const rows = [];
-  for (let i = 0; i < syncShops.length; i++) {
-    const shopId = syncShops[i]?.id;
-    const file   = comboFileMap[i];
-    if (shopId && file) rows.push({ shopId, file });
-  }
-
-  if (!rows.length) {
-    msg.textContent = 'Vui lòng upload file cho ít nhất 1 shop.';
-    msg.className = 'sync-msg err';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = `⏳ Đang sync 0/${rows.length}...`;
-  msg.className = 'sync-msg';
-
-  const results = [];
-  let totalAdded = 0;
-  let totalRemoved = 0;
-  for (let i = 0; i < rows.length; i++) {
-    const { shopId, file } = rows[i];
-    btn.textContent = `⏳ Đang sync ${i+1}/${rows.length}...`;
-
-    const formData = new FormData();
-    formData.append('shop_id', shopId);
-    formData.append('sync_stage', 'waiting');
-    formData.append('file', file);
-
-    try {
-      const res  = await fetch('/api/sync-upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.ok) {
-        totalAdded += Number(data.added_count || 0);
-        totalRemoved += Number(data.removed_count || 0);
-        results.push(`✅ ${data.shop_name}: ${data.synced} đơn · +${Number(data.added_count || 0)} mới · -${Number(data.removed_count || 0)} đã bàn giao/huỷ`);
-      } else {
-        results.push(`❌ Shop ${shopId}: ${data.error}`);
-      }
-    } catch (e) {
-      results.push(`❌ Shop ${shopId}: lỗi kết nối`);
-    }
-  }
-
-  msg.innerHTML = results.join('<br>');
-  msg.className = 'sync-msg ok';
-  lastSyncDelta = { added: totalAdded, removed: totalRemoved };
-  msg.innerHTML += `<br><br><b>Tổng lượt đồng bộ này:</b> Đơn đặt hàng mới: +${totalAdded} · Đơn đã bàn giao ĐVVC/huỷ: -${totalRemoved}`;
-  btn.disabled = false;
-
-  comboFileMap = {};
-  for (let i = 0; i < syncShops.length; i++) {
-    const uploadBtn = document.getElementById(`comboUploadBtn_${i}`);
-    if (uploadBtn) {
-      uploadBtn.textContent = '📎 Upload';
-      uploadBtn.classList.remove('has-file');
-    }
-    const input = document.getElementById(`comboInput_${i}`);
-    if (input) input.value = '';
-  }
-  const bulkInput = document.getElementById('comboBulkInput');
-  if (bulkInput) bulkInput.value = '';
-  updateComboBulkSummary('');
-
-  currentPage = 1;
-  await loadOrders();
-  await loadSummary();
-}
-
-async function doComboSyncPending() {
-  const btn  = document.getElementById('btnComboSyncPending');
-  const msg  = document.getElementById('comboMsgPending');
-
-  const rows = [];
-  for (let i = 0; i < pendingSyncShops.length; i++) {
-    const shopId = pendingSyncShops[i]?.id;
-    const file   = pendingComboFileMap[i];
-    if (shopId && file) rows.push({ shopId, file });
-  }
-
-  if (!rows.length) {
-    msg.textContent = 'Vui lòng upload file cho ít nhất 1 shop.';
-    msg.className = 'sync-msg err';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = `⏳ Đang sync 0/${rows.length}...`;
-  msg.className = 'sync-msg';
-
-  const results = [];
-  let totalAdded = 0;
-  let totalRemoved = 0;
-  for (let i = 0; i < rows.length; i++) {
-    const { shopId, file } = rows[i];
-    btn.textContent = `⏳ Đang sync ${i+1}/${rows.length}...`;
-
-    const formData = new FormData();
-    formData.append('shop_id', shopId);
-    formData.append('sync_stage', 'pending');
-    formData.append('file', file);
-
-    try {
-      const res  = await fetch('/api/sync-upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.ok) {
-        totalAdded += Number(data.added_count || 0);
-        totalRemoved += Number(data.removed_count || 0);
-        results.push(`✅ ${data.shop_name}: ${data.synced} đơn · +${Number(data.added_count || 0)} mới · -${Number(data.removed_count || 0)} đã bàn giao/huỷ`);
-      } else {
-        results.push(`❌ Shop ${shopId}: ${data.error}`);
-      }
-    } catch (e) {
-      results.push(`❌ Shop ${shopId}: lỗi kết nối`);
-    }
-  }
-
-  msg.innerHTML = results.join('<br>');
-  msg.className = 'sync-msg ok';
-  lastSyncDelta = { added: totalAdded, removed: totalRemoved };
-  msg.innerHTML += `<br><br><b>Tổng lượt đồng bộ này:</b> Đơn đặt hàng mới: +${totalAdded} · Đơn đã bàn giao ĐVVC/huỷ: -${totalRemoved}`;
-  btn.disabled = false;
-
-  pendingComboFileMap = {};
-  for (let i = 0; i < pendingSyncShops.length; i++) {
-    const uploadBtn = document.getElementById(`comboUploadBtnPending_${i}`);
-    if (uploadBtn) {
-      uploadBtn.textContent = '📎 Upload';
-      uploadBtn.classList.remove('has-file');
-    }
-    const input = document.getElementById(`comboInputPending_${i}`);
-    if (input) input.value = '';
-  }
-  const bulkInput = document.getElementById('comboBulkInputPending');
-  if (bulkInput) bulkInput.value = '';
-  updateComboBulkSummaryPending('');
-
-  currentPage = 1;
-  await loadOrders();
-  await loadSummary();
 }
 async function fetchSideOrderInfo() {
   const code = document.getElementById('sideInfoOrderCode').value.trim();
