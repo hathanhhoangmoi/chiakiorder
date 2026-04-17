@@ -4,24 +4,21 @@ import unicodedata
 from datetime import datetime, timedelta
 from urllib.parse import quote
 import httpx
-from fastapi import Depends, FastAPI, File, Form, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, Form, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
 from database import engine, get_db, migrate
-from fetcher import sync_shop, parse_excel
 from models import (
     Base,
-    ExternalOrderConfig,
     ExternalOrderConfigHoang,
-    ExternalOrderTracking,
     ExternalOrderTrackingHoang,
     Order,
     ShopMeta,
     TakenOrder,
 )
-from shops_config import BLOCKED_SHOPS, SELLER_ID, SELLER_TOKEN, SHOP_NAME_MAP, get_shops_map
+from shops_config import BLOCKED_SHOPS, SHOP_NAME_MAP, get_shops_map
 
 # ── Key management cho order-info ─────────────────────────
 VALID_KEYS = {
@@ -281,32 +278,45 @@ def normalize_sync_text(value: str | None) -> str:
         return ""
     normalized = unicodedata.normalize("NFKD", text)
     normalized = "".join(ch for ch in normalized if not unicodedata.combining(ch))
+    normalized = normalized.replace("đ", "d").replace("Đ", "D")
     return re.sub(r"\s+", " ", normalized).strip()
 
 
-def normalize_view_sync_stage(sync_stage: str | None) -> str:
-    stage = str(sync_stage or "").strip().lower()
-    if stage in {"confirm", "pending"}:
-        return "confirm"
-    if stage in {"pickup", "waiting"}:
-        return "pickup"
-    return stage
+PICKUP_ORDER_STATUS_TEXTS = {
+    "da xac nhan(y.cau x.hang)",
+    "da tao mvd/cho lay hang",
+    "cho lay hang",
+    "out_products_in_progress",
+    "request_out",
+    "receive_wating",
+    "receive_waiting",
+}
 
 
-def matches_sync_stage(status: str | None, sync_stage: str | None, raw_text: str | None = None) -> bool:
-    stage = normalize_view_sync_stage(sync_stage)
-    if not stage:
-        return True
+def is_pickup_order_status(status: str | None) -> bool:
+    return normalize_sync_text(status) in PICKUP_ORDER_STATUS_TEXTS
 
-    normalized_status = normalize_sync_text(status)
-    if not normalized_status:
-        return False
 
-    if stage == "confirm":
-        return normalized_status == "cho x.nhan"
+def filter_pickup_orders(rows: list) -> list:
+    return [
+        row for row in rows
+        if is_pickup_order_status(row.get("status", "") if isinstance(row, dict) else getattr(row, "status", ""))
+    ]
 
-    if stage == "pickup":
-        return normalized_status in {
+
+def apply_pickup_order_filter(query):
+    status_col = func.lower(func.coalesce(Order.status, ""))
+    return query.filter(or_(
+        Order.status.in_([
+            "Đã xác nhận(y.cầu x.hàng)",
+            "đã xác nhận(y.cầu x.hàng)",
+            "Đã tạo MVĐ/Chờ lấy hàng",
+            "Đã tạo mvđ/chờ lấy hàng",
+            "đã tạo mvđ/chờ lấy hàng",
+            "Chờ lấy hàng",
+            "chờ lấy hàng",
+        ]),
+        status_col.in_([
             "da xac nhan(y.cau x.hang)",
             "da tao mvd/cho lay hang",
             "cho lay hang",
@@ -314,74 +324,8 @@ def matches_sync_stage(status: str | None, sync_stage: str | None, raw_text: str
             "request_out",
             "receive_wating",
             "receive_waiting",
-        }
-
-    return True
-
-
-def filter_orders_by_sync_stage(rows: list, sync_stage: str | None) -> list:
-    stage = normalize_view_sync_stage(sync_stage)
-    if not stage:
-        return rows
-    filtered_rows = []
-    for row in rows:
-        if isinstance(row, dict):
-            status = row.get("status", "")
-            raw_text = row.get("raw_data", "")
-        else:
-            status = getattr(row, "status", "")
-            raw_text = getattr(row, "raw_data", "")
-        if matches_sync_stage(status, stage, raw_text):
-            filtered_rows.append(row)
-    return filtered_rows
-
-
-def apply_sync_stage_filter(query, sync_stage: str | None):
-    stage = normalize_view_sync_stage(sync_stage)
-    status_col = func.lower(func.coalesce(Order.status, ""))
-
-    if stage == "confirm":
-        return query.filter(or_(
-            status_col == "chờ x.nhận",
-            status_col == "cho x.nhan"
-        ))
-
-    if stage == "pickup":
-        return query.filter(or_(
-            status_col == "đã xác nhận(y.cầu x.hàng)",
-            status_col == "da xac nhan(y.cau x.hang)",
-            status_col == "đã tạo mvđ/chờ lấy hàng",
-            status_col == "da tao mvd/cho lay hang",
-            status_col == "chờ lấy hàng",
-            status_col == "cho lay hang",
-            status_col == "out_products_in_progress",
-            status_col == "request_out",
-            status_col == "receive_wating",
-            status_col == "receive_waiting",
-        ))
-
-    return query
-
-
-def build_shop_download_url(shop_id: str, status: str = "receive_wating") -> str:
-    normalized_status = str(status or "").strip().lower()
-    if normalized_status == "waiting":
-        normalized_status = "receive_wating"
-
-    today = datetime.now()
-    since = today - timedelta(days=14)
-
-    def fmt(d):
-        return quote(d.strftime("%d/%m/%Y"), safe="")
-
-    range_date = f"{fmt(since)}+-+{fmt(today)}"
-    return (
-        f"https://api.chiaki.vn/api/{shop_id}/export-excel-order"
-        f"?source=seller&page_index=1&page_size=500&status={normalized_status}"
-        f"&range_date={range_date}"
-        f"&date_type=created_at&order=create-desc"
-        f"&Seller_id={SELLER_ID}&Seller_token={SELLER_TOKEN}"
-    )
+        ]),
+    ))
 
 
 def normalize_seller_access_token(access_token: str | None) -> str:
@@ -401,6 +345,7 @@ def build_seller_get_order_request(shop_id: str, access_token: str | None) -> tu
         "page_size": "20",
         "range_date": range_date,
         "order": "create-desc",
+        "status": "receive_wating",
     }
     headers = {
         "Host": "api.chiaki.vn",
@@ -596,27 +541,6 @@ def parse_orders_json_payload(payload, shop_id: str, shop_name: str) -> list[dic
     return parsed
 
 
-def sanitize_download_filename_part(value: str, default: str = "Shop") -> str:
-    text = unicodedata.normalize("NFC", str(value or "").strip())
-    text = re.sub(r'[\\/:*?"<>|\x00-\x1f]+', " ", text)
-    text = re.sub(r"\s+", " ", text).strip(" .")
-    return text or default
-
-
-def build_shop_download_filename(shop_id: str, shop_name: str) -> str:
-    normalized_shop_id = re.sub(r"[^0-9A-Za-z_-]+", "", str(shop_id or "").strip()) or "SHOP"
-    normalized_shop_name = sanitize_download_filename_part(shop_name)
-    return f"{normalized_shop_id}_{normalized_shop_name}.xlsx"
-
-
-def build_ascii_fallback_filename(filename: str) -> str:
-    ascii_name = unicodedata.normalize("NFKD", str(filename or ""))
-    ascii_name = ascii_name.encode("ascii", "ignore").decode("ascii")
-    ascii_name = re.sub(r'[^A-Za-z0-9._ -]+', "", ascii_name)
-    ascii_name = re.sub(r"\s+", " ", ascii_name).strip(" .")
-    return ascii_name or "download.xlsx"
-
-
 def escape_for_shell_double_quotes(value: str) -> str:
     return (
         str(value or "")
@@ -709,18 +633,14 @@ async def fetch_order_info_data(order_code: str, key: str, user_id: str, db: Ses
 
 
 def normalize_external_scope(scope: str | None) -> str:
-    value = str(scope or "phuong").strip().lower()
-    return value if value in {"phuong", "hoang"} else "phuong"
+    return "hoang"
 
 
 def get_external_models(scope: str):
-    normalized = normalize_external_scope(scope)
-    if normalized == "hoang":
-        return ExternalOrderTrackingHoang, ExternalOrderConfigHoang
-    return ExternalOrderTracking, ExternalOrderConfig
+    return ExternalOrderTrackingHoang, ExternalOrderConfigHoang
 
 
-def serialize_external_order(o: ExternalOrderTracking):
+def serialize_external_order(o):
     return {
         "code": o.order_code,
         "cod": int(o.cod_amount or 0),
@@ -730,7 +650,7 @@ def serialize_external_order(o: ExternalOrderTracking):
     }
 
 
-def get_external_order_config(db: Session, scope: str = "phuong"):
+def get_external_order_config(db: Session, scope: str = "hoang"):
     _, config_model = get_external_models(scope)
     config = db.query(config_model).filter(config_model.id == 1).first()
     if not config:
@@ -741,7 +661,7 @@ def get_external_order_config(db: Session, scope: str = "phuong"):
     return config
 
 
-def serialize_external_order_config(config: ExternalOrderConfig):
+def serialize_external_order_config(config):
     fee_items = []
     payment_history = []
     try:
@@ -777,12 +697,6 @@ async def order_lookup_page():
     with open("static/order.html", encoding="utf-8") as f:
         return f.read()
 
-@app.get("/SPXP", response_class=HTMLResponse)
-@app.get("/SPXP/", response_class=HTMLResponse)
-async def spxp_dashboard_page():
-    with open("static/spxp.html", encoding="utf-8") as f:
-        return f.read()
-
 @app.get("/SPXHOANG", response_class=HTMLResponse)
 @app.get("/SPXHOANG/", response_class=HTMLResponse)
 async def spxhoang_dashboard_page():
@@ -790,9 +704,9 @@ async def spxhoang_dashboard_page():
         return f.read()
 
 @app.get("/api/summary")
-def get_summary(sync_stage: str = Query(""), db: Session = Depends(get_db)):
+def get_summary(db: Session = Depends(get_db)):
     shops = db.query(ShopMeta).all()
-    filtered_orders = filter_orders_by_sync_stage(db.query(Order).all(), sync_stage)
+    filtered_orders = apply_pickup_order_filter(db.query(Order)).all()
     total = len({str(getattr(order, "order_code", "") or "").strip() for order in filtered_orders if getattr(order, "order_code", None)})
     order_count_by_shop: dict[str, set[str]] = {}
     for order in filtered_orders:
@@ -824,7 +738,6 @@ def get_orders(
     page: int = Query(1, ge=1),
     limit: int = Query(200, le=200),
     sort: str = Query("default"),
-    sync_stage: str = Query(""),
     db: Session = Depends(get_db)
 ):
     user_id = request.headers.get('X-User-ID', '')
@@ -843,7 +756,7 @@ def get_orders(
         q = q.filter(~Order.shop_id.in_(SENSITIVE_SHOPS)).filter(
             or_(Order.total == None, Order.total < SENSITIVE_TOTAL_THRESHOLD)
         )
-    orders = filter_orders_by_sync_stage(q.all(), sync_stage)
+    orders = apply_pickup_order_filter(q).all()
     aggregated_orders = sort_aggregated_orders(aggregate_orders(orders), sort)
     total = len(aggregated_orders)
     page_rows = aggregated_orders[(page - 1) * limit: page * limit]
@@ -870,7 +783,7 @@ def search_orders_by_product(
     filters = [func.lower(Order.product).contains(normalized_q)]
     filters.extend(func.lower(Order.product).contains(token) for token in tokens)
 
-    q_orders = db.query(Order).filter(or_(*filters))
+    q_orders = apply_pickup_order_filter(db.query(Order).filter(or_(*filters)))
     if not is_full_access_user(user_id):
         q_orders = q_orders.filter(~Order.shop_id.in_(SENSITIVE_SHOPS)).filter(
             or_(Order.total == None, Order.total < SENSITIVE_TOTAL_THRESHOLD)
@@ -901,7 +814,7 @@ async def get_hanoi_orders(request: Request, db: Session = Depends(get_db)):
     user_id = request.headers.get('X-User-ID', '')
     keywords = ["hà nội", "ha noi", " hn", "hanoi", "Hà Nội"]
     filters = [func.lower(Order.address).contains(kw.lower()) for kw in keywords]
-    q = db.query(Order).filter(or_(*filters))
+    q = apply_pickup_order_filter(db.query(Order).filter(or_(*filters)))
     if not is_full_access_user(user_id):
         q = q.filter(~Order.shop_id.in_(SENSITIVE_SHOPS)).filter(
             or_(Order.total == None, Order.total < SENSITIVE_TOTAL_THRESHOLD)
@@ -915,7 +828,7 @@ async def get_nuochoa_orders(request: Request, db: Session = Depends(get_db)):
     user_id = request.headers.get('X-User-ID', '')
     keywords = ["nước hoa", "nuoc hoa", "nươc hoa", "nước  hoa"]
     filters = [func.lower(Order.product).contains(kw.lower()) for kw in keywords]
-    q = db.query(Order).filter(or_(*filters))
+    q = apply_pickup_order_filter(db.query(Order).filter(or_(*filters)))
     if not is_full_access_user(user_id):
         q = q.filter(~Order.shop_id.in_(SENSITIVE_SHOPS)).filter(
             or_(Order.total == None, Order.total < SENSITIVE_TOTAL_THRESHOLD)
@@ -923,31 +836,8 @@ async def get_nuochoa_orders(request: Request, db: Session = Depends(get_db)):
     orders = q.order_by(Order.order_date.desc()).all()
     return sort_aggregated_orders(aggregate_orders(orders), "date_desc")
 
-@app.get("/api/chart-data")
-def get_chart_data(db: Session = Depends(get_db)):
-    date_col = func.substr(Order.order_date, 1, 10)
-    by_date = (
-        db.query(date_col, func.count(Order.id))
-        .filter(Order.order_date != None, Order.order_date != '')
-        .group_by(date_col)
-        .order_by(date_col)
-        .all()
-    )
-    by_shop = (
-        db.query(Order.shop_name, func.count(Order.id))
-        .filter(Order.shop_name != None, Order.shop_name != '')
-        .group_by(Order.shop_name)
-        .order_by(func.count(Order.id).desc())
-        .all()
-    )
-    return {
-        "by_date": [{"date": d, "count": c} for d, c in by_date if d],
-        "by_shop": [{"shop": s, "count": c} for s, c in by_shop if s],
-    }
-
-
 @app.get("/api/external-orders")
-def get_external_orders(request: Request, scope: str = Query("phuong"), db: Session = Depends(get_db)):
+def get_external_orders(request: Request, scope: str = Query("hoang"), db: Session = Depends(get_db)):
     user_id = request.headers.get("X-User-ID", "").strip()
     scope = normalize_external_scope(scope)
     if scope == "hoang" and not can_view_hoang_orders(user_id):
@@ -1501,7 +1391,7 @@ async def get_mien_bac_orders(request: Request, db: Session = Depends(get_db)):
         "vĩnh phúc", "vinh phuc"
     ]
     filters = [func.lower(Order.address).contains(kw.lower()) for kw in keywords]
-    q = db.query(Order).filter(or_(*filters))
+    q = apply_pickup_order_filter(db.query(Order).filter(or_(*filters)))
     if not is_full_access_user(user_id):
         q = q.filter(~Order.shop_id.in_(SENSITIVE_SHOPS)).filter(
             or_(Order.total == None, Order.total < SENSITIVE_TOTAL_THRESHOLD)
@@ -1520,103 +1410,6 @@ def get_shops_list():
             "shop_url": shop_url
         })
     return sorted(result, key=lambda x: x["shop_name"])
-
-@app.get("/api/sync-download-links")
-def get_sync_download_links(request: Request, status: str = Query("receive_wating")):
-    user_id = request.headers.get("X-User-ID", "").strip()
-    if not get_user_capabilities(user_id).get("admin_tools"):
-        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
-
-    shops = sorted(get_shops_map().items(), key=lambda item: item[1][1])
-    return {
-        "shops": [
-            {
-                "shop_id": shop_id,
-                "shop_name": shop_name,
-                "shop_url": shop_url,
-                "download_url": build_shop_download_url(shop_id, status=status),
-                "file_name": build_shop_download_filename(shop_id, shop_name),
-            }
-            for shop_id, (shop_url, shop_name) in shops
-        ]
-    }
-
-
-@app.get("/api/sync-download-file")
-async def download_sync_shop_file(request: Request, shop_id: str = Query(...), status: str = Query("receive_wating")):
-    user_id = request.headers.get("X-User-ID", "").strip()
-    if not get_user_capabilities(user_id).get("admin_tools"):
-        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
-
-    normalized_shop_id = str(shop_id or "").strip()
-    shops = get_shops_map()
-    shop_meta = shops.get(normalized_shop_id)
-    if not shop_meta:
-        return JSONResponse({"error": "Không tìm thấy gian hàng cần tải."}, status_code=404)
-
-    _, shop_name = shop_meta
-    download_url = build_shop_download_url(normalized_shop_id, status=status)
-    headers = {
-        "accept": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/octet-stream,*/*",
-        "accept-language": "vi,en-US;q=0.9,en;q=0.8",
-        "cache-control": "no-cache",
-        "pragma": "no-cache",
-        "referer": download_url,
-        "user-agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/135.0.0.0 Safari/537.36"
-        ),
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=60, follow_redirects=True) as client:
-            response = await client.get(download_url, headers=headers)
-    except Exception as exc:
-        return JSONResponse(
-            {"error": f"Không tải được file từ Chiaki cho shop {normalized_shop_id}: {exc}"},
-            status_code=502,
-        )
-
-    if response.status_code != 200:
-        return JSONResponse(
-            {"error": f"Chiaki trả về HTTP {response.status_code} cho shop {normalized_shop_id}."},
-            status_code=502,
-        )
-
-    content_type = (response.headers.get("content-type") or "").lower()
-    if "html" in content_type or "json" in content_type:
-        preview = response.text[:300].strip()
-        detail = f" Phản hồi: {preview}" if preview else ""
-        return JSONResponse(
-            {"error": f"Chiaki không trả file Excel cho shop {normalized_shop_id}.{detail}"},
-            status_code=502,
-        )
-
-    content = response.content
-    if not content:
-        return JSONResponse(
-            {"error": f"Chiaki trả về file rỗng cho shop {normalized_shop_id}."},
-            status_code=502,
-        )
-
-    filename = build_shop_download_filename(normalized_shop_id, shop_name)
-    fallback_filename = build_ascii_fallback_filename(filename)
-    media_type = response.headers.get("content-type") or "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-    return Response(
-        content=content,
-        media_type=media_type,
-        headers={
-            "Cache-Control": "no-store",
-            "Content-Disposition": (
-                f'attachment; filename="{fallback_filename}"; '
-                f"filename*=UTF-8''{quote(filename)}"
-            ),
-            "X-Download-Filename": filename,
-        },
-    )
-
 
 @app.post("/api/tools/cancel-order-curl")
 async def create_cancel_order_curl(request: Request, body: dict):
@@ -1787,48 +1580,6 @@ curl 'https://api.chiaki.vn/api/checkout' \\
         "curl": curl_text,
     }
 
-@app.post("/api/sync")
-async def sync_now(body: dict, db: Session = Depends(get_db)):
-    shop_id     = body.get("shop_id", "").strip()
-    cf_chl_tk   = body.get("cf_chl_tk", "").strip()
-    cf_clearance = body.get("cf_clearance", "").strip()
-
-    if not shop_id:
-        return JSONResponse({"error": "Thiếu shop_id"}, status_code=400)
-    if not cf_chl_tk or not cf_clearance:
-        return JSONResponse({"error": "Thiếu cf_chl_tk hoặc cf_clearance"}, status_code=400)
-
-    shops = get_shops_map()
-    if shop_id not in shops:
-        return JSONResponse({"error": f"Không tìm thấy shop {shop_id}"}, status_code=404)
-
-    shop_url, shop_name = shops[shop_id]
-    old_codes = {
-        str(code).strip()
-        for (code,) in db.query(Order.order_code).filter(Order.shop_id == shop_id).all()
-        if code
-    }
-
-    try:
-        synced = await sync_shop(shop_id, shop_url, shop_name, db,
-                                 cf_chl_tk=cf_chl_tk, cf_clearance=cf_clearance)
-        new_codes = {
-            str(code).strip()
-            for (code,) in db.query(Order.order_code).filter(Order.shop_id == shop_id).all()
-            if code
-        }
-        delta = build_sync_delta(old_codes, new_codes)
-        return {
-            "ok": True,
-            "shop_id": shop_id,
-            "shop_name": shop_name,
-            "synced": synced,
-            **delta,
-        }
-    except Exception as e:
-        return JSONResponse({"error": str(e)}, status_code=502)
-
-
 @app.post("/api/sync-json-request")
 async def open_sync_json_request(
     request: Request,
@@ -1946,75 +1697,3 @@ async def sync_json_orders(request: Request, body: dict, db: Session = Depends(g
     except Exception as exc:
         db.rollback()
         return JSONResponse({"error": str(exc)}, status_code=500)
-
-
-@app.post("/api/sync-upload")
-async def sync_upload(
-    shop_id: str = Form(...),
-    sync_stage: str = Form("waiting"),
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
-    try:
-        shops = get_shops_map()
-        if shop_id not in shops:
-            return JSONResponse({"error": f"Không tìm thấy shop {shop_id}"}, status_code=404)
-
-        shop_url, shop_name = shops[shop_id]
-        content = await file.read()
-        existing_shop_orders = db.query(Order).filter(Order.shop_id == shop_id).all()
-        old_codes = {
-            str(getattr(order, "order_code", "")).strip()
-            for order in existing_shop_orders
-            if getattr(order, "order_code", None)
-        }
-
-        # Kiểm tra có phải Excel không (magic bytes PK = xlsx)
-        if len(content) < 100:
-            return JSONResponse({"error": "File quá nhỏ, không hợp lệ"}, status_code=422)
-
-        orders = parse_excel(content, shop_id, shop_name)
-        if orders is None:
-            return JSONResponse({"error": "Không đọc được dữ liệu từ file Excel. Kiểm tra lại cột header."}, status_code=422)
-
-        deleted = 0
-        for existing_order in existing_shop_orders:
-            db.delete(existing_order)
-            deleted += 1
-        for o in orders:
-            db.add(Order(**o))
-        db.commit()
-        new_codes = {
-            str(item.get("order_code", "")).strip()
-            for item in orders
-            if item.get("order_code")
-        }
-
-        meta = db.query(ShopMeta).filter(ShopMeta.shop_id == shop_id).first()
-        if meta:
-            meta.shop_name   = shop_name
-            meta.last_sync   = datetime.now()
-            meta.order_count = len(new_codes)
-        else:
-            db.add(ShopMeta(
-                shop_id=shop_id, shop_name=shop_name,
-                shop_url=shop_url, last_sync=datetime.now(),
-                order_count=len(new_codes)
-            ))
-        db.commit()
-        delta = build_sync_delta(old_codes, new_codes)
-
-        return {
-            "ok": True,
-            "shop_id": shop_id,
-            "shop_name": shop_name,
-            "synced": len(orders),
-            "deleted": deleted,
-            **delta
-        }
-
-    except Exception as e:
-        db.rollback()
-        import traceback
-        traceback.print_exc()
-        return JSONResponse({"error": str(e)}, status_code=500)
