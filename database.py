@@ -39,49 +39,6 @@ def migrate():
     try:
         with engine.connect() as conn:
             conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS external_order_tracking (
-                    order_code VARCHAR PRIMARY KEY,
-                    cod_amount INTEGER DEFAULT 0,
-                    status VARCHAR DEFAULT 'unknown',
-                    is_paid INTEGER DEFAULT 0,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """))
-            try:
-                conn.execute(text("ALTER TABLE external_order_tracking ADD COLUMN is_paid INTEGER DEFAULT 0"))
-                conn.commit()
-            except Exception:
-                pass
-            conn.commit()
-            print("[migrate] Đã đảm bảo bảng external_order_tracking")
-    except Exception as e:
-        print(f"[migrate] external_order_tracking: {e}")
-
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS external_order_config (
-                    id INTEGER PRIMARY KEY,
-                    fee_items_json TEXT,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """))
-            for stmt in [
-                "ALTER TABLE external_order_config ADD COLUMN fee_items_json TEXT",
-            ]:
-                try:
-                    conn.execute(text(stmt))
-                    conn.commit()
-                except Exception:
-                    pass
-            conn.commit()
-            print("[migrate] Đã đảm bảo bảng external_order_config")
-    except Exception as e:
-        print(f"[migrate] external_order_config: {e}")
-
-    try:
-        with engine.connect() as conn:
-            conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS taken_orders (
                     id INTEGER PRIMARY KEY,
                     order_code VARCHAR UNIQUE,
