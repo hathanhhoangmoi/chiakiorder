@@ -59,9 +59,6 @@ SHOPS = [
 def extract_id(url: str) -> str | None:
     m = re.search(r'-st(\d+)', url, re.IGNORECASE)
     return m.group(1) if m else None
-# Credentials từ extension của bạn
-SELLER_ID    = "4647"
-SELLER_TOKEN = "ebf7e96d976f74aa77b2b874b7a087ef"
 SHOP_NAME_MAP = {code: name for _, name, code in SHOPS}
 BLOCKED_SHOPS = {
     "0001",
