@@ -27,9 +27,7 @@ VALID_KEYS = {
 }
 KEY_LIMIT = 10
 # Lưu lịch sử tra cứu: {key: [{"order_code": ..., "time": ...}]}
-KEY_HISTORY: dict = {k: [] for k in VALID_KEYS}
 # Lưu lịch sử đăng nhập: {key: [{"event": "login/logout", "time": ...}]}
-LOGIN_HISTORY: list = []  # [{key, event, time}]
 # Database setup
 Base.metadata.create_all(bind=engine)
 migrate()
@@ -83,6 +81,7 @@ def serialize_order(o):
         "shop_name":     o.shop_name,
         "buyer_name":    o.buyer_name,
         "customer_name": o.customer_name,
+        "phone":         o.phone,
         "address":       o.address,
         "product":       o.product,
         "quantity":      o.quantity,
@@ -137,6 +136,8 @@ def aggregate_orders(rows: list[Order]) -> list[dict]:
 
         if product_line not in item["_product_lines"]:
             item["_product_lines"].append(product_line)
+        if not item.get("phone") and getattr(row, "phone", None):
+            item["phone"] = row.phone
         if status and status not in item["_statuses"]:
             item["_statuses"].append(status)
         sync_id = str(getattr(row, "sync_id", "") or "").strip()
@@ -207,7 +208,6 @@ def get_user_capabilities(user_id: str) -> dict:
         "manage_external_orders": can_manage_external_orders(normalized),
         "view_hoang_orders": can_view_hoang_orders(normalized),
         "admin_tools": normalized_upper == TAKEN_ORDER_ADMIN_KEY or normalized == "LOGIN-KEY-PHUONG2000",
-        "view_history_panel": can_view_hoang_orders(normalized),
         "manage_taken_orders": is_taken_orders_admin(normalized),
         "delete_taken_orders": can_delete_taken_orders(normalized),
         "view_taken_orders": bool(normalized),
@@ -1178,12 +1178,6 @@ async def get_order_info(request: Request, body: dict, db: Session = Depends(get
     VALID_KEYS[key] += 1
     remaining = -1 if key in UNLIMITED_KEYS else KEY_LIMIT - VALID_KEYS[key]
 
-    from datetime import timezone as _tz
-    now_vn = datetime.now(_tz(timedelta(hours=7))).strftime("%d/%m/%Y %H:%M")
-    if key not in KEY_HISTORY:
-        KEY_HISTORY[key] = []
-    KEY_HISTORY[key].append({"order_code": order_code, "time": now_vn})
-
     input_id = order_code[2:9]
     
     url = f"https://ec.megaads.vn/service/inoutput/find-promotion-codes-api?inoutputId={input_id}"
@@ -1292,45 +1286,6 @@ async def check_key(body: dict):
         "limit": -1 if is_unlimited else KEY_LIMIT,
         "unlimited": is_unlimited
 }
-@app.get("/api/order-info/history")
-async def get_key_history(request: Request):
-    user_id = request.headers.get('X-User-ID', '')
-    if not is_taken_orders_admin(user_id):
-        return JSONResponse({"error": "Không có quyền."}, status_code=403)
-
-    result = []
-    for key, logs in KEY_HISTORY.items():
-        if logs:
-            result.append({
-                "key":     key,
-                "used":    VALID_KEYS.get(key, 0),
-                "limit":   KEY_LIMIT,
-                "history": logs
-            })
-    return {"data": result, "total_queries": sum(len(v) for v in KEY_HISTORY.values())}
-@app.post("/api/auth/login-log")
-async def login_log(body: dict, request: Request):
-    key    = body.get("key", "").strip()
-    event  = body.get("event", "login")  # "login" hoặc "logout"
-    
-    from datetime import timezone as _tz
-    now_vn = datetime.now(_tz(timedelta(hours=7))).strftime("%H:%M:%S ngày %d/%m/%Y")
-    
-    LOGIN_HISTORY.append({
-        "key":   key,
-        "event": event,
-        "time":  now_vn,
-    })
-    return {"ok": True}
-
-@app.get("/api/auth/login-history")
-async def get_login_history(request: Request):
-    user_id = request.headers.get('X-User-ID', '')
-    if not is_taken_orders_admin(user_id):
-        return JSONResponse({"error": "Không có quyền."}, status_code=403)
-    return {"data": LOGIN_HISTORY, "total": len(LOGIN_HISTORY)}
-
-
 @app.get("/api/auth/capabilities")
 def get_auth_capabilities(request: Request):
     user_id = request.headers.get("X-User-ID", "").strip()
