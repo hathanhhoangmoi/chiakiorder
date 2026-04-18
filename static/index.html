@@ -1038,89 +1038,6 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
 }
 #sortSelect:hover{border-color:rgba(94,186,140,.8);box-shadow:0 6px 16px rgba(122,191,115,.24);transform:translateY(-1px)}
 #sortSelect:focus{border-color:#7abf73;box-shadow:0 0 0 3px rgba(122,191,115,.18)}
-.history-panel{
-  display:none;position:fixed;right:24px;top:72px;bottom:24px;z-index:8000;
-  width:360px;background:rgba(255,255,255,.88);
-  backdrop-filter:blur(30px) saturate(200%);
-  -webkit-backdrop-filter:blur(30px) saturate(200%);
-  border:1px solid rgba(186,214,253,.35);border-radius:35px;
-  flex-direction:column;overflow:hidden;
-  box-shadow:0 16px 48px rgba(87,3,1,.12);
-}
-.history-panel.open{display:flex}
-.history-header{
-  padding:18px 16px 12px;
-  border-bottom:1px solid rgba(186,214,253,.2);
-  display:flex;justify-content:space-between;align-items:center;
-}
-.history-header-title{font-size:14px;font-weight:700;color:#570301}
-.history-close{
-  width:28px;height:28px;border-radius:50%;border:none;
-  background:rgba(186,214,253,.3);color:#7a3040;
-  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
-.history-stats{
-  padding:10px 16px;background:rgba(245,186,213,.1);
-  border-bottom:1px solid rgba(186,214,253,.15);
-  font-size:11px;color:#a06070;display:flex;gap:16px;
-}
-.history-stats b{color:#570301;font-size:13px}
-.history-body{flex:1;overflow-y:auto;padding:10px 12px}
-.history-key-block{margin-bottom:14px}
-.history-key-label{
-  font-size:10px;font-weight:700;color:#a06070;
-  letter-spacing:.4px;margin-bottom:5px;display:flex;justify-content:space-between;
-}
-.history-key-name{
-  font-family:inter;font-size:10px;color:#570301;
-  background:rgba(186,214,253,.2);padding:1px 6px;border-radius:35px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;
-}
-.history-key-used{color:#570301;font-weight:700}
-.history-item{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:6px 10px;border-radius:35px;margin-bottom:3px;
-  background:rgba(255,255,255,.5);border:1px solid rgba(186,214,253,.2);
-  font-size:11px;
-}
-.history-item-code{font-weight:700;color:#570301;font-family:monospace}
-.history-item-time{color:#c09090;font-size:10px}
-.history-empty{text-align:center;color:#d0a0b0;padding:40px 20px;font-size:12px}
-.history-toggle-btn{
-  position:fixed;right:16px;bottom:80px;z-index:7900;
-  width:44px;height:44px;border-radius:35px;border:none;
-  background:linear-gradient(135deg,#F7E594,#f59e0b);
-  color:#570301;font-size:18px;cursor:pointer;
-  box-shadow:0 4px 16px rgba(247,229,148,.5);
-  display:none;align-items:center;justify-content:center;transition:all .2s;
-}
-.history-toggle-btn.visible{display:flex}
-.history-toggle-btn:hover{transform:scale(1.1)}
-.history-tabs{
-  display:flex;gap:6px;padding:10px 12px 0;
-  border-bottom:1px solid rgba(186,214,253,.2);
-}
-.history-tab{
-  flex:1;padding:7px;border:none;border-radius:35px;
-  font-family:inherit;font-size:11px;font-weight:700;
-  cursor:pointer;background:rgba(186,214,253,.15);color:#a06070;transition:all .2s;
-}
-.history-tab.active{
-  background:linear-gradient(135deg,#F5BAD5,#BAD6FD);
-  color:#570301;
-}
-.login-item{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  padding:9px 12px;border-radius:10px;margin-bottom:6px;
-  border:1px solid rgba(186,214,253,.2);font-size:11px;
-}
-.login-item.login-ev{background:rgba(247,229,148,.2);border-color:rgba(247,229,148,.4)}
-.login-item.logout-ev{background:rgba(245,186,213,.2);border-color:rgba(245,186,213,.35)}
-.login-key{font-weight:700;color:#570301;font-size:12px;margin-bottom:2px}
-.login-time{color:#a06070;font-size:10px}
-.login-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.login-badge.in{background:rgba(247,229,148,.5);color:#7a4500}
-.login-badge.out{background:rgba(245,186,213,.5);color:#570301}
 .download-panel{
   display:none;position:fixed;left:24px;top:92px;z-index:7000;
   width:420px;max-height:calc(100vh - 110px);overflow-y:auto;
@@ -1551,6 +1468,18 @@ body.compact-touch-ui #panelOrderInfo{
   color:#3f4d46;
   box-shadow:0 4px 12px rgba(122,191,115,.2);
 }
+.sync-id-cell{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.sync-id-cell .btn-copy-order-main,
+.mobile-detail-value .btn-copy-order-main{
+  margin-top:0;
+  padding:4px 10px;
+  font-size:10px;
+}
 .table-actions-row{
   display:flex;
   align-items:center;
@@ -1587,42 +1516,11 @@ body.compact-touch-ui #panelOrderInfo{
   font-size:11px;
   text-align:center;
 }
-.desktop-order-actions,
 .compact-order-actions{
   display:flex;
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
-}
-.btn-take-order{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:8px 14px;
-  border:none;
-  border-radius:999px;
-  background:linear-gradient(135deg,#fb7185,#f97316);
-  color:#fff7ed;
-  font-family:inherit;
-  font-size:11px;
-  font-weight:800;
-  cursor:pointer;
-  box-shadow:0 8px 18px rgba(249,115,22,.18);
-  transition:all .15s;
-}
-.btn-take-order:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 20px rgba(249,115,22,.24);
-}
-.btn-take-order:disabled{
-  opacity:.65;
-  cursor:not-allowed;
-  transform:none;
-  box-shadow:none;
-}
-.compact-order-btn.secondary{
-  background:linear-gradient(135deg,#fca5a5,#fb7185);
-  box-shadow:0 6px 14px rgba(244,114,182,.18);
 }
 .taken-orders-readonly{
   display:none;
@@ -1980,29 +1878,6 @@ body.compact-touch-ui #panelOrderInfo{
       </div>
     </div>
   </div>
-  <button
-  id="historyToggleBtn"
-  onclick="toggleHistoryPanel()"
-  style="
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(198,181,255,.4);
-    background: rgba(255,255,255,.4);
-    color: #7c6fa0;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .2s;
-  "
-  onmouseover="this.style.background='rgba(255,255,255,.7)'"
-  onmouseout="this.style.background='rgba(255,255,255,.4)'"
->
-  🕓 Log track
-</button>
 </div>
 
 <div class="external-orders-wrap">
@@ -2265,11 +2140,10 @@ body.compact-touch-ui #panelOrderInfo{
             <th>Sản phẩm</th>
             <th>Số lượng</th>
             <th>Tổng tiền</th>
-            <th>Trạng thái</th>
           </tr>
         </thead>
         <tbody id="productSearchBody">
-          <tr><td colspan="9" class="product-search-empty">Nhập từ khóa để tìm sản phẩm.</td></tr>
+          <tr><td colspan="8" class="product-search-empty">Nhập từ khóa để tìm sản phẩm.</td></tr>
         </tbody>
       </table>
     </div>
@@ -2366,7 +2240,7 @@ body.compact-touch-ui #panelOrderInfo{
     </button>
     <textarea class="info-input" id="syncJsonText" rows="9"
       placeholder="Paste JSON đơn hàng trả về từ tab mới..."
-      style="min-height:180px;resize:vertical;font-family:monospace;font-size:11px;line-height:1.55"></textarea>
+      style="min-height:180px;resize:vertical;font-family:monospace;font-size:11px;line-height:1.55;border-radius:8px"></textarea>
     <button class="btn-info-search" id="btnSyncJsonOrders" type="button"
       onclick="syncWaitingJsonOrders()"
       style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin-top:8px;background:linear-gradient(to right,#bad6fd,#f7e594);color:#1e3a5f">
@@ -2534,11 +2408,10 @@ body.compact-touch-ui #panelOrderInfo{
               <th>Sản phẩm</th>
               <th>Số lượng</th>
               <th>Tổng tiền</th>
-              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="11" class="empty">
+            <tr><td colspan="9" class="empty">
               <div class="empty-icon">📭</div>
               <div>Đang tải dữ liệu...</div>
             </td></tr>
@@ -2567,7 +2440,6 @@ body.compact-touch-ui #panelOrderInfo{
               <th>Sản phẩm</th>
               <th>SL</th>
               <th>Tổng tiền</th>
-              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody id="tbodyHanoi"></tbody>
@@ -2588,7 +2460,7 @@ body.compact-touch-ui #panelOrderInfo{
         <thead><tr>
           <th>Mã đơn</th><th>Ngày tạo</th><th>Gian hàng</th>
           <th>Tên khách hàng</th><th>Địa chỉ</th>
-          <th>Sản phẩm</th><th>SL</th><th>Tổng tiền</th><th>Trạng thái</th>
+          <th>Sản phẩm</th><th>SL</th><th>Tổng tiền</th>
         </tr></thead>
         <tbody id="tbodyMienBac"></tbody>
       </table>
@@ -2609,7 +2481,7 @@ body.compact-touch-ui #panelOrderInfo{
           <tr>
             <th>Mã đơn</th><th>Ngày đặt</th><th>Gian hàng</th>
             <th>Tên khách hàng</th><th>Địa chỉ</th>
-            <th>Sản phẩm</th><th>SL</th><th>Tổng tiền</th><th>Trạng thái</th>
+            <th>Sản phẩm</th><th>SL</th><th>Tổng tiền</th>
           </tr>
         </thead>
         <tbody id="tbodyNuocHoa"></tbody>
@@ -2620,31 +2492,6 @@ body.compact-touch-ui #panelOrderInfo{
 </div>
 </div><!-- end .container -->
 
-<!-- Panel lịch sử -->
-<div class="history-panel" id="historyPanel">
-  <div class="history-header">
-    <div class="history-header-title">📋 Lịch sử</div>
-    <button
-      onclick="toggleHistoryPanel()"
-      style="
-        width:28px; height:28px; border-radius:50%;
-        border:none; background:rgba(198,181,255,.3);
-        color:#7c6fa0; font-size:14px; cursor:pointer;
-        display:flex; align-items:center; justify-content:center;
-      "
-    >✕</button>
-    
-  </div>
-  <div class="history-tabs">
-    <button class="history-tab active" id="htabPhone" onclick="switchHistoryTab('phone')">✨ PHONE</button>
-    <button class="history-tab" id="htabLogin" onclick="switchHistoryTab('login')">🔑 LOGIN</button>
-  </div>
-  <div class="history-stats">
-    <div>Tổng: <b id="hsTotalQueries">—</b></div>
-    <div>Keys: <b id="hsTotalKeys">—</b></div>
-  </div>
-  <div class="history-body" id="historyBody"></div>
-</div>
 <!-- ── MODAL HUỶ ĐƠN HÀNG ── -->
 <div id="cancelOrderBg" style="display:none; position:fixed; inset:0;
      background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center;">
@@ -3450,7 +3297,6 @@ async function init() {
     }
     loadHanoi();
     loadNuocHoa();
-    initHistoryBtn();
     loadMienBac();
   } catch(e) {
     showLoading(false);
@@ -3506,7 +3352,7 @@ function applyCompactTouchUiMode() {
 }
 
 function getMainTableColspan() {
-  return isCompactViewport() ? 6 : (canManageTakenOrders() ? 11 : 10);
+  return isCompactViewport() ? 6 : 9;
 }
 
 function escapeTextHtml(value) {
@@ -3516,6 +3362,14 @@ function escapeTextHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function escapeJsString(value) {
+  return String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n');
 }
 
 function stripHtml(value) {
@@ -3710,7 +3564,7 @@ function renderTakenOrdersModal(selectedId = window.latestTakenOrderId) {
           </div>
         </div>
       `).join('')
-    : `<div class="taken-orders-empty">Chưa có đơn nào được lấy. Hãy bấm <b>LẤY ĐƠN</b> ở cuối từng dòng đơn hàng.</div>`;
+    : `<div class="taken-orders-empty">Chưa có đơn nào được lấy.</div>`;
 }
 
 async function loadTakenOrders(options = {}) {
@@ -3770,42 +3624,6 @@ function openTakenOrdersModal(selectedId = window.latestTakenOrderId) {
 function closeTakenOrdersModal() {
   const modal = ensureTakenOrdersModalRoot();
   if (modal) modal.classList.remove('show');
-}
-
-async function takeOrder(orderCode, button) {
-  if (!canManageTakenOrders()) return;
-  const rawOrderCode = String(orderCode || '').trim();
-  if (!rawOrderCode) return;
-
-  const original = button?.textContent || 'LẤY ĐƠN';
-  if (button) {
-    button.disabled = true;
-    button.textContent = 'Đang lấy...';
-  }
-
-  try {
-    const res = await fetch('/api/taken-orders/take', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-ID': localStorage.getItem(ID_KEY) || ''
-      },
-      body: JSON.stringify({ order_code: rawOrderCode })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Không lấy được đơn.');
-    window.latestTakenOrderId = data.item?.id || null;
-    await loadTakenOrders({ silent: true });
-    openTakenOrdersModal(window.latestTakenOrderId);
-    showToast(`✅ Đã lấy đơn ${normalizeLookupOrderCode(rawOrderCode)}`);
-  } catch (error) {
-    showToast(`❌ ${error.message}`);
-  } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent = original;
-    }
-  }
 }
 
 async function updateTakenOrderStatus(id, status) {
@@ -3876,24 +3694,23 @@ async function deleteTakenOrder(id) {
 }
 
 function buildMobileOrderDetailRows(order, detail) {
-  const mergedPhone = detail?.phone || 'Không lấy được SĐT';
-  const mergedStatus = detail?.status || order?.status || '—';
-  const mergedProduct = detail?.product || stripHtml(order?.product || '') || '—';
+  const mergedProduct = stripHtml(order?.product || '') || '—';
   return {
     subtitle: `Đơn ${normalizeLookupOrderCode(order?.order_code || '') || '—'}`,
-    status: mergedStatus,
+    status: order?.status || 'Chi tiết đơn hàng',
     rows: [
       ['Mã đơn hàng', normalizeLookupOrderCode(order?.order_code || '') || '—'],
-      ['Sync ID', detail?.sync_id || order?.sync_id || '—'],
-      ['Ngày đặt', detail?.order_date || order?.order_date || '—'],
-      ['Gian hàng', detail?.shop_name || order?.shop_name || order?.shop_id || '—'],
-      ['Tên khách', detail?.customer_name || order?.customer_name || order?.buyer_name || '—'],
-      ['SĐT', mergedPhone],
-      ['Địa chỉ', detail?.address || stripHtml(order?.address || '') || '—'],
+      ['Mã đơn đầy đủ', order?.order_code || '—'],
+      ['Sync ID', order?.sync_id || '—'],
+      ['Ngày đặt', order?.order_date || '—'],
+      ['Gian hàng', order?.shop_name || order?.shop_id || '—'],
+      ['Tên khách', order?.customer_name || order?.buyer_name || '—'],
+      ['SĐT', order?.phone || '—'],
+      ['Địa chỉ', stripHtml(order?.address || '') || '—'],
       ['Sản phẩm', mergedProduct],
-      ['Số lượng', detail?.quantity ?? order?.quantity ?? '—'],
-      ['Giá trị đơn', detail?.prepaid_amount || formatOrderTotal(order?.total)],
-      ['Trạng thái', mergedStatus],
+      ['Số lượng', order?.quantity ?? '—'],
+      ['Giá trị đơn', formatOrderTotal(order?.total)],
+      ['Trạng thái đơn', order?.status || '—'],
     ],
   };
 }
@@ -3918,12 +3735,19 @@ function renderMobileOrderDetail(order, detail = null, note = '') {
   const payload = buildMobileOrderDetailRows(order, detail);
   sub.textContent = payload.subtitle;
   status.textContent = payload.status || '—';
-  rows.innerHTML = payload.rows.map(([label, value]) => `
-    <div class="mobile-detail-row">
-      <div class="mobile-detail-label">${escapeTextHtml(label)}</div>
-      <div class="mobile-detail-value">${escapeTextHtml(value)}</div>
-    </div>
-  `).join('');
+  rows.innerHTML = payload.rows.map(([label, value]) => {
+    const textValue = String(value ?? '').trim();
+    const canCopySyncId = label === 'Sync ID' && textValue && textValue !== '—';
+    return `
+      <div class="mobile-detail-row">
+        <div class="mobile-detail-label">${escapeTextHtml(label)}</div>
+        <div class="mobile-detail-value">
+          ${escapeTextHtml(value)}
+          ${canCopySyncId ? `<button class="btn-copy-order-main" type="button" onclick="copyPlainText(this, '${escapeTextHtml(escapeJsString(textValue))}')">COPY</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
 
   noteEl.textContent = note || '';
   noteEl.classList.toggle('show', !!note);
@@ -3942,38 +3766,12 @@ async function openMobileOrderDetail(orderCode) {
   const modal = ensureMobileOrderDetailModalRoot();
   if (!modal) return;
   modal.classList.add('show');
-  renderMobileOrderDetail(order, null, 'Đang lấy SĐT từ tra cứu đơn hàng...');
-
-  const normalizedCode = normalizeLookupOrderCode(order.order_code);
-  if (!normalizedCode) {
-    renderMobileOrderDetail(order, null, 'Không tìm thấy mã đơn hợp lệ để tra cứu SĐT.');
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/order-info', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-ID': localStorage.getItem('chiaki_id') || ''
-      },
-      body: JSON.stringify({ order_code: normalizedCode, key: 'HOANG5611' })
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) {
-      renderMobileOrderDetail(order, null, data.error || 'Không lấy được SĐT từ API tra cứu.');
-      return;
-    }
-    renderMobileOrderDetail(order, data, '');
-  } catch (error) {
-    renderMobileOrderDetail(order, null, `Lỗi kết nối khi lấy SĐT: ${error.message}`);
-  }
+  renderMobileOrderDetail(order, null, '');
 }
 
 function renderMainTableHeader() {
   const head = document.getElementById('mainTableHead');
   if (!head) return;
-  const canTake = canManageTakenOrders();
 
   head.innerHTML = isCompactViewport()
     ? `<tr>
@@ -3994,8 +3792,6 @@ function renderMainTableHeader() {
         <th>Sản phẩm</th>
         <th>Số lượng</th>
         <th>Tổng tiền</th>
-        <th>Trạng thái</th>
-        ${canTake ? '<th>Thao tác</th>' : ''}
       </tr>`;
 }
 
@@ -4004,7 +3800,6 @@ function renderMainOrdersRows(data) {
   if (!tbody) return;
 
   const compact = isCompactViewport();
-  const canTake = canManageTakenOrders();
   window.orderRowMap = {};
 
   if (!data.data || data.data.length === 0) {
@@ -4020,6 +3815,8 @@ function renderMainOrdersRows(data) {
     const rawOrderCode = o.order_code || '—';
     const normalizedOrderCode = normalizeLookupOrderCode(rawOrderCode) || rawOrderCode;
     const escapedOrderCode = String(rawOrderCode).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const syncId = String(o.sync_id || '').trim();
+    const escapedSyncId = escapeTextHtml(escapeJsString(syncId));
     window.orderRowMap[rawOrderCode] = o;
 
     if (compact) {
@@ -4036,7 +3833,6 @@ function renderMainOrdersRows(data) {
           <td>${R ? `<span class="restricted-mask">—</span>` : `
             <div class="compact-order-actions">
               <button class="compact-order-btn" type="button" onclick="openMobileOrderDetail('${escapedOrderCode}')">Chi tiết</button>
-              ${canTake ? `<button class="compact-order-btn secondary" type="button" onclick="takeOrder('${escapedOrderCode}', this)">LẤY ĐƠN</button>` : ''}
             </div>
           `}</td>
         </tr>`;
@@ -4048,7 +3844,14 @@ function renderMainOrdersRows(data) {
           <b style="font-family:monospace;font-size:11px">${R ? M('••••••••') : rawOrderCode}</b>
           ${R ? '' : `<br><button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>`}
         </td>
-        <td style="font-family:monospace;font-size:11px;color:#7c6fa0">${R ? M() : escapeTextHtml(o.sync_id || '—')}</td>
+        <td style="font-family:monospace;font-size:11px;color:#7c6fa0">
+          ${R ? M() : `
+            <div class="sync-id-cell">
+              <span>${escapeTextHtml(syncId || '—')}</span>
+              ${syncId ? `<button class="btn-copy-order-main" type="button" onclick="copyPlainText(this, '${escapedSyncId}')">COPY</button>` : ''}
+            </div>
+          `}
+        </td>
         <td style="font-size:11px;color:#9b8bb4">${R ? M() : escapeTextHtml(o.order_date || '—')}</td>
         <td><span class="shop-chip">${escapeTextHtml(o.shop_name || o.shop_id || '—')}</span></td>
         <td>${R ? M() : escapeTextHtml(o.customer_name || o.buyer_name || '—')}</td>
@@ -4056,8 +3859,6 @@ function renderMainOrdersRows(data) {
         <td style="max-width:220px;white-space:normal;word-break:break-word">${R ? M() : (o.product || '—')}</td>
         <td style="text-align:center">${R ? M() : escapeTextHtml(o.quantity || '—')}</td>
         <td><b>${R ? M() : escapeTextHtml(formatOrderTotal(o.total))}</b></td>
-        <td>${R ? `<span class="restricted-mask">••••••••</span>` : escapeTextHtml(o.status || '—')}</td>
-        ${canTake ? `<td>${R ? `<span class="restricted-mask">—</span>` : `<div class="desktop-order-actions"><button class="btn-take-order" type="button" onclick="takeOrder('${escapedOrderCode}', this)">LẤY ĐƠN</button></div>`}</td>` : ''}
       </tr>`;
   }).join('');
 }
@@ -4127,7 +3928,7 @@ function renderHanoiTable(data) {
 
   const tbody = document.getElementById('tbodyHanoi');
   if (!count) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty">
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">
       <div class="empty-icon">📭</div><div>Không có đơn nào tại Hà Nội</div>
     </td></tr>`;
     return;
@@ -4145,7 +3946,6 @@ function renderHanoiTable(data) {
       <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
       <td style="text-align:center">${o.quantity || '—'}</td>
       <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-      <td>${o.restricted ? `<span class="restricted-mask">••••••••</span>` : (o.status || '—')}</td>
     </tr>
   `).join('');
 }
@@ -4172,7 +3972,7 @@ function renderNuocHoaTable(data) {
 
   const tbody = document.getElementById('tbodyNuocHoa');
   if (!count) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty">
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">
       <div class="empty-icon">📭</div><div>Không có đơn nào Nước hoa</div>
     </td></tr>`;
     return;
@@ -4190,7 +3990,6 @@ function renderNuocHoaTable(data) {
       <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
       <td style="text-align:center">${o.quantity || '—'}</td>
       <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-      <td>${o.restricted ? `<span class="restricted-mask">••••••••</span>` : (o.status || '—')}</td>
     </tr>
   `).join('');
 }
@@ -4282,18 +4081,6 @@ async function fetchAndUpdateShopNames(shops) {
       console.warn(`[shopname] Lỗi ${shop.shop_id}:`, e);
     }
   }
-}
-
-function statusTag(s) {
-  if (!s || s === 'nan') return '—';
-  const sl = s.toLowerCase();
-  if (sl.includes('wait') || sl.includes('chờ'))
-    return `<span class="tag tag-wait">${s}</span>`;
-  if (sl.includes('done') || sl.includes('hoàn') || sl.includes('giao'))
-    return `<span class="tag tag-done">${s}</span>`;
-  if (sl.includes('cancel') || sl.includes('huỷ'))
-    return `<span class="tag tag-cancel">${s}</span>`;
-  return `<span class="tag" style="background:rgba(198,181,255,.3);color:#5b4b8a">${s}</span>`;
 }
 
 function renderPagination(total) {
@@ -4845,12 +4632,6 @@ async function submitId() {
     startExpireCountdown();
     init();
 
-    fetch('/api/auth/login-log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: id, event: 'login' })
-    });
-
   } catch(e) {
     showIdError('Lỗi kết nối: ' + e.message);
   }
@@ -4865,15 +4646,6 @@ function showIdError(msg) {
 function changeId() {
   if (!confirm('Bạn có chắc muốn đổi ID? Thời gian còn lại sẽ được tính theo lần nhập đầu tiên.')) return;
 
-  const oldId = localStorage.getItem('chiaki_id') || '';
-  if (oldId) {
-    fetch('/api/auth/login-log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: oldId, event: 'logout' })
-    });
-  }
-
   localStorage.removeItem(ID_KEY);
   localStorage.removeItem(ID_EXP);
   window.userCapabilities = {};
@@ -4882,114 +4654,6 @@ function changeId() {
   location.reload();
 }
 
-function initHistoryBtn() {
-  const panel    = document.getElementById('historyPanel');
-  const toggleBtn = document.getElementById('historyToggleBtn');
-
-  if (hasCapability('view_history_panel')) {
-    if (toggleBtn) {
-      toggleBtn.classList.add('visible'); // nút tròn hiện
-    }
-
-    setTimeout(() => loadHistoryPanel(), 200);
-  } else {
-    if (panel) panel.classList.remove('open');
-    if (toggleBtn) toggleBtn.classList.remove('visible');
-  }
-}
-
-let historyPanelOpen = false;
-
-function toggleHistoryPanel() {
-  historyPanelOpen = !historyPanelOpen;
-  document.getElementById('historyPanel').classList.toggle('open', historyPanelOpen);
-  if (historyPanelOpen) loadHistoryPanel();
-}
-
-let currentHistoryTab = 'phone';
-
-function switchHistoryTab(tab) {
-  currentHistoryTab = tab;
-  document.getElementById('htabPhone').classList.toggle('active', tab === 'phone');
-  document.getElementById('htabLogin').classList.toggle('active', tab === 'login');
-  loadHistoryPanel();
-}
-
-async function loadHistoryPanel() {
-  const body = document.getElementById('historyBody');
-  body.innerHTML = '<div class="history-empty">Đang tải...</div>';
-  const uid = localStorage.getItem('chiaki_id') || '';
-
-  if (currentHistoryTab === 'phone') {
-
-    try {
-      const res = await fetch('/api/order-info/history', {
-        headers: { 'X-User-ID': uid }
-      });
-      const data = await res.json();
-      if (data.error) { body.innerHTML = `<div class="history-empty">⛔ ${data.error}</div>`; return; }
-
-      document.getElementById('hsTotalQueries').textContent = data.total_queries;
-      document.getElementById('hsTotalKeys').textContent    = data.data.length;
-
-      if (!data.data.length) { body.innerHTML = '<div class="history-empty">Chưa có tra cứu nào</div>'; return; }
-
-      body.innerHTML = data.data.map(k => {
-        const codes = k.history.slice().reverse().map(h => `
-          <div style="display:flex;justify-content:space-between;align-items:center;
-            padding:5px 0;border-bottom:1px solid rgba(198,181,255,.15);font-size:12px;">
-            <span style="font-family:monospace;font-weight:700;color:#3b3551;">📦 ${h.order_code}</span>
-            <span style="font-size:10px;color:#b0a0c8;">${h.time}</span>
-          </div>`).join('');
-        return `
-          <div style="background:rgba(255,255,255,.5);border:1px solid rgba(198,181,255,.25);
-            border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <div style="font-family:monospace;font-size:11px;font-weight:700;color:#5b4b8a;
-                background:rgba(216,180,254,.25);padding:3px 10px;border-radius:20px;
-                border:1px solid rgba(198,181,255,.4);max-width:190px;
-                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🔑 ${k.key}</div>
-              <div style="font-size:11px;font-weight:700;color:${k.used>=k.limit?'#dc2626':'#059669'}">
-                ${k.used}/${k.limit} lượt</div>
-            </div>
-            <div style="font-size:11px;font-weight:700;color:#9b8bb4;margin-bottom:6px;">
-              ĐƠN ĐÃ TRA CỨU (${k.history.length})</div>
-            ${codes || '<div style="font-size:11px;color:#c4b5d4;">Chưa tra cứu</div>'}
-          </div>`;
-      }).join('');
-    } catch(e) {
-      body.innerHTML = `<div class="history-empty">Lỗi: ${e.message}</div>`;
-    }
-
-  } else {
-
-    try {
-      const res = await fetch('/api/auth/login-history', {
-        headers: { 'X-User-ID': uid }
-      });
-      const data = await res.json();
-      if (data.error) { body.innerHTML = `<div class="history-empty">⛔ ${data.error}</div>`; return; }
-
-      document.getElementById('hsTotalQueries').textContent = data.total;
-      document.getElementById('hsTotalKeys').textContent    = [...new Set(data.data.map(d=>d.key))].length;
-
-      if (!data.data.length) { body.innerHTML = '<div class="history-empty">Chưa có đăng nhập nào</div>'; return; }
-
-      body.innerHTML = [...data.data].reverse().map(d => `
-        <div class="login-item ${d.event === 'login' ? 'login-ev' : 'logout-ev'}">
-          <div>
-            <div class="login-key">👤 ${d.key}</div>
-            <div class="login-time">${d.time}</div>
-          </div>
-          <span class="login-badge ${d.event === 'login' ? 'in' : 'out'}">
-            ${d.event === 'login' ? '🟢 Login' : '🔴 Logout'}
-          </span>
-        </div>`).join('');
-    } catch(e) {
-      body.innerHTML = `<div class="history-empty">Lỗi: ${e.message}</div>`;
-    }
-  }
-}
 let productSearchTimer = null;
 
 function closeProductSearchModal() {
@@ -5020,7 +4684,7 @@ function renderProductSearchResults(rows, keyword) {
   meta.textContent = `Từ khóa: "${keyword}" · ${rows.length} đơn khớp`;
 
   if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="product-search-empty">Không tìm thấy đơn hàng khớp tên sản phẩm.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="product-search-empty">Không tìm thấy đơn hàng khớp tên sản phẩm.</td></tr>';
     return;
   }
 
@@ -5046,7 +4710,6 @@ function renderProductSearchResults(rows, keyword) {
         <td style="max-width:240px;white-space:normal;word-break:break-word">${o.product || '—'}</td>
         <td style="text-align:center">${o.quantity || '—'}</td>
         <td><b>${totalText}</b></td>
-        <td>${o.status || '—'}</td>
       </tr>
     `;
   }).join('');
@@ -5077,7 +4740,7 @@ async function searchProductOrders(forceOpen = false) {
   }
 
   if (tbody) {
-    tbody.innerHTML = '<tr><td colspan="9" class="product-search-empty">Đang tìm kiếm...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="product-search-empty">Đang tìm kiếm...</td></tr>';
   }
   if (meta) {
     meta.textContent = `Đang tìm với từ khóa: "${keyword}"`;
@@ -5109,7 +4772,7 @@ async function searchProductOrders(forceOpen = false) {
       return;
     }
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="9" class="product-search-empty">Lỗi tìm kiếm: ${e.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="product-search-empty">Lỗi tìm kiếm: ${e.message}</td></tr>`;
     }
     if (meta) {
       meta.textContent = `Không thể tìm sản phẩm với từ khóa: "${keyword}"`;
@@ -5129,7 +4792,7 @@ function renderMienBacTable(data) {
 
   const tbody = document.getElementById('tbodyMienBac');
   if (!count) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty"><div class="empty-icon">📭</div><div>Không có đơn nào tại Miền Bắc</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty"><div class="empty-icon">📭</div><div>Không có đơn nào tại Miền Bắc</div></td></tr>`;
     return;
   }
   tbody.innerHTML = data.map(o => `<tr>
@@ -5144,7 +4807,6 @@ function renderMienBacTable(data) {
     <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
     <td style="text-align:center">${o.quantity || '—'}</td>
     <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-      <td>${o.restricted ? `<span class="restricted-mask">••••••••</span>` : (o.status || '—')}</td>
   </tr>`).join('');
 }
 
@@ -5244,6 +4906,8 @@ async function syncWaitingJsonOrders() {
       `${data.shop_name}: đã lưu ${data.unique_orders || data.synced} đơn (${data.synced} dòng sản phẩm) · +${lastSyncDelta.added} mới · -${lastSyncDelta.removed} đã bàn giao/huỷ`,
       'ok'
     );
+    const jsonInput = document.getElementById('syncJsonText');
+    if (jsonInput) jsonInput.value = '';
     currentPage = 1;
     await loadOrders();
     await loadSummary();
@@ -5427,29 +5091,37 @@ document.addEventListener('DOMContentLoaded', () => {
 function copyOrderCode(btn, fullCode) {
   const parts = fullCode.split('_')
   const codeToCopy = parts.length > 1 ? parts[parts.length - 1] : fullCode
+  copyPlainText(btn, codeToCopy)
+}
+
+function copyPlainText(btn, text) {
+  const textToCopy = String(text || '').trim()
+  if (!textToCopy) return
   const originalText = btn.textContent
 
-  navigator.clipboard.writeText(codeToCopy).then(() => {
+  const doSuccess = () => {
     btn.textContent = '✓'
     btn.classList.add('copied')
     setTimeout(() => {
       btn.textContent = originalText
       btn.classList.remove('copied')
     }, 1500)
-  }).catch(() => {
+  }
+  const fallbackCopy = () => {
     const el = document.createElement('textarea')
-    el.value = codeToCopy
+    el.value = textToCopy
     document.body.appendChild(el)
     el.select()
     document.execCommand('copy')
     document.body.removeChild(el)
-    btn.textContent = '✓'
-    btn.classList.add('copied')
-    setTimeout(() => {
-      btn.textContent = originalText
-      btn.classList.remove('copied')
-    }, 1500)
-  })
+    doSuccess()
+  }
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(textToCopy).then(doSuccess).catch(fallbackCopy)
+  } else {
+    fallbackCopy()
+  }
 }
 
 document.addEventListener('click', event => {
