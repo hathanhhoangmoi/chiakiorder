@@ -3,8 +3,8 @@ import re
 import unicodedata
 from datetime import datetime, timedelta
 import httpx
-from fastapi import Depends, FastAPI, Form, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse, Response
+from fastapi import Depends, FastAPI, Query, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
@@ -31,7 +31,7 @@ KEY_LIMIT = 10
 # Database setup
 Base.metadata.create_all(bind=engine)
 migrate()
-UNLIMITED_KEYS = {"HOANG5611", "Hoang5611", "PHONE-KEY-PHUONG2000"}
+UNLIMITED_KEYS = {"HOANG5611", "Hoang5611", "PHUONG2000"}
 
 app = FastAPI(title="Chiaki Order Dashboard")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -43,7 +43,7 @@ SENSITIVE_SHOPS = {"4647", "4732"}
 SENSITIVE_TOTAL_THRESHOLD = 2_500_000
 PHONE_KEY_PHUONG_ALLOWED_SHOPS = {"4917", "4940", "5096", "5125", "5114"}
 LOGIN_ID_META = {
-    "LOGIN-KEY-PHUONG2000": {"hours": 1, "label": "Phương"},
+    "PHUONG2000": {"hours": 24, "label": "Phương"},
     "LOGIN-KEY-CHANGTESTUSER": {"hours": 9999999999, "label": "Hoàng"},
     "Hoang5611": {"hours": 9999999999, "label": "Hoàng"},
     "HOANG5611": {"hours": 9999999999, "label": "Hoàng"},
@@ -538,6 +538,61 @@ def parse_orders_json_payload(payload, shop_id: str, shop_name: str) -> list[dic
                 "raw_data": raw_data,
             })
     return parsed
+
+
+def persist_orders_payload(db: Session, payload, shop_id: str) -> dict:
+    shops = get_shops_map()
+    if shop_id not in shops:
+        raise LookupError(f"Không tìm thấy shop {shop_id}.")
+
+    shop_url, shop_name = shops[shop_id]
+    existing_shop_orders = db.query(Order).filter(Order.shop_id == shop_id).all()
+    old_codes = {
+        str(getattr(order, "order_code", "")).strip()
+        for order in existing_shop_orders
+        if getattr(order, "order_code", None)
+    }
+
+    orders = parse_orders_json_payload(payload, shop_id, shop_name)
+    if not orders:
+        raise ValueError("Không tìm thấy danh sách đơn hàng trong JSON.")
+
+    deleted = 0
+    for existing_order in existing_shop_orders:
+        db.delete(existing_order)
+        deleted += 1
+    for order in orders:
+        db.add(Order(**order))
+
+    new_codes = {
+        str(item.get("order_code", "")).strip()
+        for item in orders
+        if item.get("order_code")
+    }
+    meta = db.query(ShopMeta).filter(ShopMeta.shop_id == shop_id).first()
+    if meta:
+        meta.shop_name = shop_name
+        meta.last_sync = datetime.now()
+        meta.order_count = len(new_codes)
+    else:
+        db.add(ShopMeta(
+            shop_id=shop_id,
+            shop_name=shop_name,
+            shop_url=shop_url,
+            last_sync=datetime.now(),
+            order_count=len(new_codes),
+        ))
+    db.commit()
+    delta = build_sync_delta(old_codes, new_codes)
+    return {
+        "ok": True,
+        "shop_id": shop_id,
+        "shop_name": shop_name,
+        "synced": len(orders),
+        "unique_orders": len(new_codes),
+        "deleted": deleted,
+        **delta,
+    }
 
 
 async def fetch_order_info_data(order_code: str, key: str, user_id: str, db: Session):
@@ -1355,120 +1410,45 @@ def get_shops_list():
         })
     return sorted(result, key=lambda x: x["shop_name"])
 
-@app.post("/api/sync-json-request")
-async def open_sync_json_request(
-    request: Request,
-    shop_id: str = Form(...),
-    access_token: str = Form(...),
-    user_id: str = Form(""),
-):
-    effective_user_id = request.headers.get("X-User-ID", "").strip() or str(user_id or "").strip()
-    if not get_user_capabilities(effective_user_id).get("admin_tools"):
+@app.post("/api/sync-token-orders")
+async def sync_token_orders(request: Request, body: dict, db: Session = Depends(get_db)):
+    user_id = request.headers.get("X-User-ID", "").strip()
+    if not get_user_capabilities(user_id).get("admin_tools"):
         return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
 
-    normalized_shop_id = str(shop_id or "").strip()
-    token = normalize_seller_access_token(access_token)
-    if not normalized_shop_id:
-        return JSONResponse({"error": "Thiếu shop_id."}, status_code=422)
-    if not token:
-        return JSONResponse({"error": "Thiếu accesstoken."}, status_code=422)
-    if normalized_shop_id not in get_shops_map():
-        return JSONResponse({"error": f"Không tìm thấy shop {normalized_shop_id}."}, status_code=404)
+    shop_id = str(body.get("shop_id", "") or "").strip()
+    access_token = str(body.get("access_token", "") or "").strip()
+    if not shop_id:
+        return JSONResponse({"error": "Vui lòng chọn gian hàng."}, status_code=422)
+    if not access_token:
+        return JSONResponse({"error": "Vui lòng nhập token seller."}, status_code=422)
+    if shop_id not in get_shops_map():
+        return JSONResponse({"error": f"Không tìm thấy shop {shop_id}."}, status_code=404)
 
-    url, params, headers = build_seller_get_order_request(normalized_shop_id, token)
+    url, params, headers = build_seller_get_order_request(shop_id, access_token)
     try:
         async with httpx.AsyncClient(timeout=45, follow_redirects=True) as client:
             response = await client.get(url, params=params, headers=headers)
     except Exception as exc:
         return JSONResponse({"error": f"Không gọi được API Chiaki: {exc}"}, status_code=502)
 
-    content_type = response.headers.get("content-type") or "application/json"
-    try:
-        parsed = response.json()
-        body = _json.dumps(parsed, ensure_ascii=False, indent=2)
-        content_type = "application/json"
-    except Exception:
-        body = response.text
-
-    return Response(
-        content=body,
-        media_type=content_type,
-        status_code=response.status_code,
-        headers={"Cache-Control": "no-store"},
-    )
-
-
-@app.post("/api/sync-json-orders")
-async def sync_json_orders(request: Request, body: dict, db: Session = Depends(get_db)):
-    user_id = request.headers.get("X-User-ID", "").strip()
-    if not get_user_capabilities(user_id).get("admin_tools"):
-        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
-
-    shop_id = str(body.get("shop_id", "") or "").strip()
-    json_text = str(body.get("json_text", "") or "").strip()
-    if not shop_id:
-        return JSONResponse({"error": "Vui lòng chọn gian hàng."}, status_code=422)
-    if not json_text:
-        return JSONResponse({"error": "Vui lòng paste JSON trả về từ Chiaki."}, status_code=422)
-
-    shops = get_shops_map()
-    if shop_id not in shops:
-        return JSONResponse({"error": f"Không tìm thấy shop {shop_id}."}, status_code=404)
+    if response.status_code < 200 or response.status_code >= 300:
+        detail = response.text[:500] if response.text else ""
+        return JSONResponse({
+            "error": f"API Chiaki trả HTTP {response.status_code}. {detail}".strip()
+        }, status_code=502)
 
     try:
-        payload = _json.loads(json_text)
+        payload = response.json()
     except Exception as exc:
-        return JSONResponse({"error": f"JSON không hợp lệ: {exc}"}, status_code=422)
-
-    shop_url, shop_name = shops[shop_id]
-    existing_shop_orders = db.query(Order).filter(Order.shop_id == shop_id).all()
-    old_codes = {
-        str(getattr(order, "order_code", "")).strip()
-        for order in existing_shop_orders
-        if getattr(order, "order_code", None)
-    }
-
-    orders = parse_orders_json_payload(payload, shop_id, shop_name)
-    if not orders:
-        return JSONResponse({"error": "Không tìm thấy danh sách đơn hàng trong JSON."}, status_code=422)
+        return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {exc}"}, status_code=502)
 
     try:
-        deleted = 0
-        for existing_order in existing_shop_orders:
-            db.delete(existing_order)
-            deleted += 1
-        for order in orders:
-            db.add(Order(**order))
-
-        new_codes = {
-            str(item.get("order_code", "")).strip()
-            for item in orders
-            if item.get("order_code")
-        }
-        meta = db.query(ShopMeta).filter(ShopMeta.shop_id == shop_id).first()
-        if meta:
-            meta.shop_name = shop_name
-            meta.last_sync = datetime.now()
-            meta.order_count = len(new_codes)
-        else:
-            db.add(ShopMeta(
-                shop_id=shop_id,
-                shop_name=shop_name,
-                shop_url=shop_url,
-                last_sync=datetime.now(),
-                order_count=len(new_codes),
-            ))
-        db.commit()
-        delta = build_sync_delta(old_codes, new_codes)
-        return {
-            "ok": True,
-            "shop_id": shop_id,
-            "shop_name": shop_name,
-            "synced": len(orders),
-            "unique_orders": len(new_codes),
-            "deleted": deleted,
-            **delta,
-        }
+        return persist_orders_payload(db, payload, shop_id)
+    except LookupError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=422)
     except Exception as exc:
         db.rollback()
         return JSONResponse({"error": str(exc)}, status_code=500)
