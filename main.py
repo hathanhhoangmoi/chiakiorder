@@ -19,7 +19,7 @@ from models import (
 )
 from shops_config import BLOCKED_SHOPS, SHOP_NAME_MAP, get_shops_map
 
-# ── Key management cho order-info ─────────────────────────
+# ── Key management cho luồng đơn đã lấy ───────────────────
 VALID_KEYS = {
     "HOANG5611": 0,
     "Hoang5611": 0,
@@ -31,7 +31,7 @@ KEY_LIMIT = 10
 # Database setup
 Base.metadata.create_all(bind=engine)
 migrate()
-UNLIMITED_KEYS = {"HOANG5611", "Hoang5611", "PHUONG2000"}
+UNLIMITED_KEYS = {"HOANG5611", "Hoang5611", "PHONE-KEY-PHUONG2000"}
 
 app = FastAPI(title="Chiaki Order Dashboard")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -43,7 +43,7 @@ SENSITIVE_SHOPS = {"4647", "4732"}
 SENSITIVE_TOTAL_THRESHOLD = 2_500_000
 PHONE_KEY_PHUONG_ALLOWED_SHOPS = {"4917", "4940", "5096", "5125", "5114"}
 LOGIN_ID_META = {
-    "PHUONG2000": {"hours": 24, "label": "Phương"},
+    "LOGIN-KEY-PHUONG2000": {"hours": 1, "label": "Phương"},
     "LOGIN-KEY-CHANGTESTUSER": {"hours": 9999999999, "label": "Hoàng"},
     "Hoang5611": {"hours": 9999999999, "label": "Hoàng"},
     "HOANG5611": {"hours": 9999999999, "label": "Hoàng"},
@@ -361,6 +361,17 @@ def build_seller_get_order_request(shop_id: str, access_token: str | None) -> tu
     return f"https://api.chiaki.vn/seller/{shop_id}/get-order", params, headers
 
 
+def build_order_view_request(sync_id: str) -> tuple[str, dict, dict]:
+    return "https://api.chiaki.vn/api/v2/order-view", {"sync_id": sync_id}, {
+        "Host": "api.chiaki.vn",
+        "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+        "platform": "ios",
+        "imei": "A4184509-4A7A-423B-A0EE-044668760C71",
+        "token": "YpuvtHHYC38QZvlRS8lJP3wDmj72iZlGPgBIyTrBWzc6vNXOWI",
+        "Accept": "application/json, text/plain, */*",
+    }
+
+
 def first_non_empty(mapping: dict | None, keys: list[str]):
     if not isinstance(mapping, dict):
         return None
@@ -540,7 +551,7 @@ def parse_orders_json_payload(payload, shop_id: str, shop_name: str) -> list[dic
     return parsed
 
 
-def persist_orders_payload(db: Session, payload, shop_id: str) -> dict:
+def persist_orders_payload(db: Session, payload, shop_id: str, allow_empty: bool = False) -> dict:
     shops = get_shops_map()
     if shop_id not in shops:
         raise LookupError(f"Không tìm thấy shop {shop_id}.")
@@ -554,7 +565,7 @@ def persist_orders_payload(db: Session, payload, shop_id: str) -> dict:
     }
 
     orders = parse_orders_json_payload(payload, shop_id, shop_name)
-    if not orders:
+    if not orders and not allow_empty:
         raise ValueError("Không tìm thấy danh sách đơn hàng trong JSON.")
 
     deleted = 0
@@ -590,6 +601,7 @@ def persist_orders_payload(db: Session, payload, shop_id: str) -> dict:
         "shop_name": shop_name,
         "synced": len(orders),
         "unique_orders": len(new_codes),
+        "empty_orders": not orders,
         "deleted": deleted,
         **delta,
     }
@@ -1214,133 +1226,35 @@ def delete_taken_order(request: Request, body: dict, db: Session = Depends(get_d
 
 @app.post("/api/order-info")
 async def get_order_info(request: Request, body: dict, db: Session = Depends(get_db)):
-    order_code = body.get("order_code", "").strip()
-    key        = body.get("key", "").strip()
-    user_id    = request.headers.get('X-User-ID', '')
+    sync_id = str(body.get("sync_id", body.get("syncid", "")) or "").strip()
+    if not sync_id:
+        return JSONResponse({"error": "Vui lòng nhập sync_id."}, status_code=400)
 
-    if not order_code or not key:
-        return JSONResponse({"error": "Thiếu mã đơn hàng hoặc key."}, status_code=400)
-
-    if key not in VALID_KEYS:
-        return JSONResponse({"error": "Key không hợp lệ."}, status_code=403)
-
-    if key not in UNLIMITED_KEYS and VALID_KEYS[key] >= KEY_LIMIT:
-        return JSONResponse({"error": f"Key đã hết lượt sử dụng ({KEY_LIMIT}/{KEY_LIMIT})."}, status_code=403)
-
-    if len(order_code) < 9:
-        return JSONResponse({"error": "Mã đơn hàng không hợp lệ."}, status_code=400)
-
-    VALID_KEYS[key] += 1
-    remaining = -1 if key in UNLIMITED_KEYS else KEY_LIMIT - VALID_KEYS[key]
-
-    input_id = order_code[2:9]
-    
-    url = f"https://ec.megaads.vn/service/inoutput/find-promotion-codes-api?inoutputId={input_id}"
-    session = "eyJpdiI6ImIra2pmWitCVVRRTlp2K3pRUUZOZ1E9PSIsInZhbHVlIjoibXpYaFhkQmVZU1VMRFRKWWhEcXRCdnBFSWdycVNzNFlSVHpGWjVYT0hTVDFpdlErVWxDSWhEaVdcL3JyT2RvSjZIcDNkMVJSYTllZDJMMTlsR2ZIQ3BnPT0iLCJtYWMiOiI2MDc2MTFlNDg0MTg4M2IyNDBiNDAzMDE4ZWE0MTk0ZTFkNDdlNGU3MjQ0ZjA3ODFkYTlkYzZiMjcyOTEyMzNmIn0%3D"
-    
+    url, params, headers = build_order_view_request(sync_id)
     try:
-        async with httpx.AsyncClient(timeout=15) as client:
-            res = await client.get(url, headers={
-                "Accept": "application/json, text/plain, */*",
-                "platform": "ios",
-                "Cookie": f"laravel_session={session}",
-                "User-Agent": "chiakiApp/3.6.2"
-            })
-        data = res.json()
-
-        d = data.get("result") or data.get("data") or {}
-        if isinstance(d, list):
-            d = d[0] if d else {}
-        def g(*keys):
-            for k in keys:
-                v = d.get(k)
-                if v: return str(v)
-            return "—"
-
-        phone = next((x for x in d.get("search", "").split() if x.isdigit() and len(x) >= 9), "—")
-
-        payment_type   = d.get("payment_type", "")
-        prepaid_amount = d.get("prepaid_amount")
-        is_approved    = d.get("is_approved_prepaid", "0")
-        prepaid_time   = d.get("prepaid_time")
-
-        payment_status = build_payment_status_text(payment_type, is_approved, prepaid_time)
-        db_order = db.query(Order).filter(
-        Order.order_code.like(f"%_{order_code}")
-            ).first()
-        hide_order = should_hide_order(db_order, user_id)
-        db_product   = db_order.product   if db_order else "—"
-        shop_id_from_api = g("store_code", "creator_name")
-        db_shop_name = (
-            SHOP_NAME_MAP.get(shop_id_from_api)
-            or (db_order.shop_name if db_order else None)
-            or shop_id_from_api
-        )
-        db_total     = f"{int(db_order.total):,} đ".replace(",", ".") if db_order and db_order.total else "—"
-        url_history_parsed = []
-        try:
-            meta_raw = d.get("meta_data", "{}")
-            meta = _json.loads(meta_raw) if isinstance(meta_raw, str) else (meta_raw or {})
-            uh = meta.get("url_history", {})
-            if isinstance(uh, dict):
-                url_history_parsed = [v for _, v in sorted(uh.items(), key=lambda x: int(x[0]))]
-            elif isinstance(uh, list):
-                url_history_parsed = uh
-        except Exception:
-            meta = {}
-            url_history_parsed = []
-        source_from = meta.get("meta_tracking", {}).get("from", "") or g("from") or ""
-
-        effective_shop_id = str((db_order.shop_id if db_order and db_order.shop_id else shop_id_from_api) or "").strip()
-        if key == "PHONE-KEY-PHUONG2000" and effective_shop_id not in PHONE_KEY_PHUONG_ALLOWED_SHOPS:
-            return JSONResponse({"error": "Không có thông tin đơn hàng."}, status_code=404)
-
-        if hide_order:
-            return JSONResponse({"error": "Không tìm thấy đơn hàng hoặc bạn không có quyền xem đơn này."}, status_code=404)
-
-        return {
-    "order_code":           g("code"),
-    "sync_id":              (db_order.sync_id if db_order else None) or d.get("sync_id") or "—",
-    "status":               g("status"),
-    "shop_name":            db_shop_name,
-    "order_date":           g("verified_time", "create_time"),
-    "customer_name":        g("related_user_name", "receiver_name"),
-    "customer_id":          meta.get("customer_id") or d.get("related_user_id"),
-    "phone":                phone,
-    "email":                g("email_id"),
-    "address":              g("delivery_address"),
-    "source":               g("source", "from"),
-    "source_from":          source_from,
-    "payment":              payment_status,
-    "prepaid_amount":       db_total,
-    "shipping_code":        g("shipping_code"),
-    "delivery_status":      g("delivery_status"),
-    "delivery_location_id": g("delivery_location_id"),
-    "district_delivery_id": g("district_delivery_id"),
-    "commune_delivery_id":  g("commune_delivery_id"),
-    "shipper_receive_time": g("shipper_receive_time"),
-    "product":              db_product,
-    "quantity":             d.get("quantity") or (db_order.quantity if db_order else None),
-    "url_history":          url_history_parsed,
-    "remaining":            remaining,
-}
+        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+            res = await client.get(url, params=params, headers=headers)
     except Exception as e:
-        VALID_KEYS[key] -= 1
-        return JSONResponse({"error": f"Lỗi khi gọi API: {str(e)}"}, status_code=500)
+        return JSONResponse({"error": f"Lỗi khi gọi API Chiaki: {str(e)}"}, status_code=502)
 
-@app.post("/api/order-info/check-key")
-async def check_key(body: dict):
-    key = body.get("key", "").strip()
-    if key not in VALID_KEYS:
-        return JSONResponse({"error": "Key không hợp lệ."}, status_code=403)
-    used = VALID_KEYS[key]
-    is_unlimited = key in UNLIMITED_KEYS
+    if res.status_code < 200 or res.status_code >= 300:
+        detail = res.text[:500] if res.text else ""
+        return JSONResponse({
+            "error": f"API Chiaki trả HTTP {res.status_code}. {detail}".strip()
+        }, status_code=502)
+
+    try:
+        data = res.json()
+    except Exception as e:
+        return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {str(e)}"}, status_code=502)
+
     return {
-        "used": used,
-        "remaining": -1 if is_unlimited else KEY_LIMIT - used,
-        "limit": -1 if is_unlimited else KEY_LIMIT,
-        "unlimited": is_unlimited
-}
+        "ok": True,
+        "sync_id": sync_id,
+        "request_url": f"{url}?sync_id={sync_id}",
+        "data": data,
+    }
+
 @app.get("/api/auth/capabilities")
 def get_auth_capabilities(request: Request):
     user_id = request.headers.get("X-User-ID", "").strip()
@@ -1410,6 +1324,34 @@ def get_shops_list():
         })
     return sorted(result, key=lambda x: x["shop_name"])
 
+
+def get_order_sync_shop_sequence() -> list[dict]:
+    return get_shops_list()
+
+
+async def fetch_and_persist_waiting_orders(
+    client: httpx.AsyncClient,
+    db: Session,
+    shop_id: str,
+    access_token: str,
+    *,
+    allow_empty: bool = False,
+) -> dict:
+    url, params, headers = build_seller_get_order_request(shop_id, access_token)
+    response = await client.get(url, params=params, headers=headers)
+
+    if response.status_code < 200 or response.status_code >= 300:
+        detail = response.text[:500] if response.text else ""
+        raise RuntimeError(f"API Chiaki trả HTTP {response.status_code}. {detail}".strip())
+
+    try:
+        payload = response.json()
+    except Exception as exc:
+        raise ValueError(f"API Chiaki không trả JSON hợp lệ: {exc}") from exc
+
+    return persist_orders_payload(db, payload, shop_id, allow_empty=allow_empty)
+
+
 @app.post("/api/sync-token-orders")
 async def sync_token_orders(request: Request, body: dict, db: Session = Depends(get_db)):
     user_id = request.headers.get("X-User-ID", "").strip()
@@ -1425,30 +1367,98 @@ async def sync_token_orders(request: Request, body: dict, db: Session = Depends(
     if shop_id not in get_shops_map():
         return JSONResponse({"error": f"Không tìm thấy shop {shop_id}."}, status_code=404)
 
-    url, params, headers = build_seller_get_order_request(shop_id, access_token)
     try:
         async with httpx.AsyncClient(timeout=45, follow_redirects=True) as client:
-            response = await client.get(url, params=params, headers=headers)
-    except Exception as exc:
-        return JSONResponse({"error": f"Không gọi được API Chiaki: {exc}"}, status_code=502)
-
-    if response.status_code < 200 or response.status_code >= 300:
-        detail = response.text[:500] if response.text else ""
-        return JSONResponse({
-            "error": f"API Chiaki trả HTTP {response.status_code}. {detail}".strip()
-        }, status_code=502)
-
-    try:
-        payload = response.json()
-    except Exception as exc:
-        return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {exc}"}, status_code=502)
-
-    try:
-        return persist_orders_payload(db, payload, shop_id)
-    except LookupError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=404)
-    except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=422)
+            return await fetch_and_persist_waiting_orders(client, db, shop_id, access_token)
     except Exception as exc:
         db.rollback()
-        return JSONResponse({"error": str(exc)}, status_code=500)
+        return JSONResponse({"error": str(exc)}, status_code=502)
+
+
+@app.post("/api/sync-token-orders-batch")
+async def sync_token_orders_batch(request: Request, body: dict, db: Session = Depends(get_db)):
+    user_id = request.headers.get("X-User-ID", "").strip()
+    if not get_user_capabilities(user_id).get("admin_tools"):
+        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
+
+    access_token = str(body.get("access_token", "") or "").strip()
+    if not access_token:
+        return JSONResponse({"error": "Vui lòng nhập token seller."}, status_code=422)
+
+    shops = get_order_sync_shop_sequence()
+    total_shops = len(shops)
+    try:
+        start_index = int(body.get("start_index", 0) or 0)
+    except Exception:
+        start_index = 0
+    start_index = max(0, min(start_index, total_shops))
+    batch_size = 5
+    batch_shops = shops[start_index:start_index + batch_size]
+
+    if not batch_shops:
+        return {
+            "ok": True,
+            "completed": True,
+            "start_index": start_index,
+            "next_index": total_shops,
+            "total_shops": total_shops,
+            "batch_size": 0,
+            "results": [],
+            "totals": {"synced": 0, "unique_orders": 0, "added": 0, "removed": 0, "empty": 0},
+        }
+
+    results = []
+    totals = {"synced": 0, "unique_orders": 0, "added": 0, "removed": 0, "empty": 0}
+    next_index = start_index
+
+    async with httpx.AsyncClient(timeout=45, follow_redirects=True) as client:
+        for offset, shop in enumerate(batch_shops):
+            shop_id = str(shop.get("shop_id", "") or "").strip()
+            shop_name = str(shop.get("shop_name", shop_id) or "").strip()
+            try:
+                result = await fetch_and_persist_waiting_orders(
+                    client,
+                    db,
+                    shop_id,
+                    access_token,
+                    allow_empty=True,
+                )
+            except Exception as exc:
+                db.rollback()
+                return JSONResponse({
+                    "error": f"Lỗi đồng bộ shop {shop_id} - {shop_name}: {exc}",
+                    "start_index": start_index,
+                    "next_index": next_index,
+                    "total_shops": total_shops,
+                    "results": results,
+                    "totals": totals,
+                }, status_code=502)
+
+            next_index = start_index + offset + 1
+            totals["synced"] += int(result.get("synced") or 0)
+            totals["unique_orders"] += int(result.get("unique_orders") or 0)
+            totals["added"] += int(result.get("added_count") or 0)
+            totals["removed"] += int(result.get("removed_count") or 0)
+            if result.get("empty_orders"):
+                totals["empty"] += 1
+
+            results.append({
+                "shop_id": shop_id,
+                "shop_name": shop_name,
+                "synced": result.get("synced", 0),
+                "unique_orders": result.get("unique_orders", 0),
+                "added_count": result.get("added_count", 0),
+                "removed_count": result.get("removed_count", 0),
+                "empty_orders": bool(result.get("empty_orders")),
+            })
+
+    return {
+        "ok": True,
+        "completed": next_index >= total_shops,
+        "start_index": start_index,
+        "next_index": next_index,
+        "total_shops": total_shops,
+        "batch_size": len(batch_shops),
+        "results": results,
+        "totals": totals,
+    }
