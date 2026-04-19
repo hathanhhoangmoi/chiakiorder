@@ -862,6 +862,20 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
 .info-input::placeholder{color:#d0b0b8;font-family:Inter,sans-serif;letter-spacing:0}
 .info-result{margin-top:16px;display:none;border-top:1px solid rgba(186,214,253,.3);padding-top:16px}
 .info-result.show{display:block}
+.info-json-output{
+  max-height:520px;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  margin:0;
+  padding:12px;
+  border:1px solid rgba(186,214,253,.35);
+  border-radius:8px;
+  background:rgba(255,255,255,.62);
+  color:#3b3551;
+  font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  text-align:left;
+}
 .info-row{
   display:flex;align-items:flex-start;
   justify-content:space-between;gap:8px;
@@ -2174,45 +2188,19 @@ body.compact-touch-ui #panelOrderInfo{
     <div class="panel-body">
     <div class="info-modal-icon">🔍</div>
     <div class="info-modal-title">Thông tin đơn hàng</div>
-    <div class="info-modal-sub">Điền mã đơn và key để nhận thông tin đơn hàng</div>
+    <div class="info-modal-sub">Điền sync_id để lấy toàn bộ JSON thông tin đơn hàng từ Chiaki</div>
     <input class="info-input" id="infoOrderCode" type="text"
-      placeholder="Mã đơn..."
-      onkeydown="if(event.key==='Enter') fetchOrderInfo()" />
-    <input class="info-input" id="infoKey" type="text"
-  placeholder="Key..."
-  onkeydown="if(event.key==='Enter') fetchOrderInfo()"
-  style="margin-bottom:12px;font-family:monospace;letter-spacing:1px" />
-<div id="infoKeyStatus" style="font-size:11px;color:#9b8bb4;margin-bottom:4px;min-height:16px"></div>
+      placeholder="sync_id..."
+      onkeydown="if(event.key==='Enter') fetchOrderInfo()"
+      style="border-radius:8px;font-family:monospace;letter-spacing:0" />
 
     <div class="info-error" id="infoError"></div>
     <div class="info-result" id="infoResult">
-      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin-bottom:8px">THÔNG TIN ĐƠN HÀNG</div>
-      <div id="irStatusBanner" style="border-radius:12px;padding:10px 14px;text-align:center;font-size:13px;font-weight:700;margin-bottom:14px;display:none"></div>
-      <div class="info-row"><span class="info-label">Mã đơn hàng</span><span class="info-value" id="irCode">—</span></div>
-      <div class="info-row"><span class="info-label">Gian hàng</span><span class="info-value" id="irShop">—</span></div>
-      <div class="info-row"><span class="info-label">Thời gian đặt hàng</span><span class="info-value" id="irDate">—</span></div>
-      <div class="info-row"><span class="info-label">Tên khách hàng</span><span class="info-value" id="irName">—</span></div>
-      <div class="info-row"><span class="info-label">Customer ID</span><span class="info-value" id="irCustomerId">—</span></div>
-      <div class="info-row"><span class="info-label">SĐT</span><span class="info-value" id="irPhone">—</span></div>
-      <div class="info-row"><span class="info-label">Email</span><span class="info-value" id="irEmail">—</span></div>
-      <div class="info-row"><span class="info-label">Địa chỉ</span><span class="info-value" id="irAddress">—</span></div>
-      <div class="info-row"><span class="info-label">Sản phẩm</span><span class="info-value" id="irProduct">—</span></div>
-      <div class="info-row"><span class="info-label">Số lượng</span><span class="info-value" id="irQuantity"></span></div>
-      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin:12px 0 8px">HÀNH TRÌNH MUA HÀNG</div>
-      <div id="irUrlHistory" style="font-size:12px;color:#4c3f72;line-height:1.8;"></div>
-      <div class="info-row"><span class="info-label">Nguồn đơn hàng</span><span class="info-value" id="irSource">—</span></div>
-      <div class="info-row"><span class="info-label">Thanh toán</span><span class="info-value" id="irPayment">—</span></div>
-      <div class="info-row"><span class="info-label">Số tiền TT</span><span class="info-value" id="irPrepaid">—</span></div>
-      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin:12px 0 8px">VẬN CHUYỂN</div>
-      <div class="info-row"><span class="info-label">Delivery Location ID</span><span class="info-value" id="irDeliveryLocationId">—</span></div>
-      <div class="info-row"><span class="info-label">District Delivery ID</span><span class="info-value" id="irDistrictDeliveryId">—</span></div>
-      <div class="info-row"><span class="info-label">Commune Delivery ID</span><span class="info-value" id="irCommuneDeliveryId">—</span></div>
-      <div class="info-row"><span class="info-label">Mã vận đơn</span><span class="info-value" id="irShippingCode">—</span></div>
-      <div class="info-row"><span class="info-label">Trạng thái giao</span><span class="info-value" id="irDeliveryStatus">—</span></div>
-      <div class="info-row"><span class="info-label">Shipper lấy hàng</span><span class="info-value" id="irShipperReceive">—</span></div>
+      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin-bottom:8px">JSON THÔNG TIN ĐƠN HÀNG</div>
+      <pre class="info-json-output" id="orderInfoJson">—</pre>
     </div>
 <div class="info-btns">
-  <button class="btn-info-search" id="infoSearchBtn" onclick="fetchOrderInfo()" style="flex:1">🔍 Tra cứu đơn hàng</button>
+  <button class="btn-info-search" id="infoSearchBtn" onclick="fetchOrderInfo()" style="flex:1">🔍 Lấy thông tin theo sync_id</button>
 </div>
 </div>
 </div>
@@ -2234,23 +2222,21 @@ body.compact-touch-ui #panelOrderInfo{
     <div class="info-modal-title">Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
     <div class="info-modal-sub">Điền token seller để hệ thống tự động lấy JSON và lưu dữ liệu theo từng nhóm shop</div>
 
-    <label class="sync-label">Phiên đồng bộ theo nhóm 5 shop</label>
-    <div class="sync-hint" id="syncSessionHint">Chọn shop bắt đầu, nhập token seller, rồi bấm đồng bộ. Hệ thống sẽ tự chạy tối đa 5 shop và dừng để nhập token tiếp theo.</div>
-    <select class="info-input" id="syncShopId" onchange="prepareSyncTokenSession()">
-      <option value="">Mời chọn</option>
-    </select>
+    <label class="sync-label">Phiên đồng bộ tự động theo nhóm 5 shop</label>
+    <div class="sync-hint" id="syncSessionHint">Nhập token seller rồi bấm đồng bộ. Server sẽ tự quét 5 shop kế tiếp, shop nào không có đơn sẽ bỏ qua.</div>
     <input class="info-input" id="syncJsonAccessToken" type="text"
-      placeholder="Token seller cho shop hiện tại..."
+      placeholder="Token seller cho nhóm 5 shop tiếp theo..."
+      onkeydown="if(event.key==='Enter') syncCurrentTokenShop()"
       style="margin-top:8px;font-family:monospace" />
     <button class="btn-info-search" id="btnSyncJsonOrders" type="button"
       onclick="syncCurrentTokenShop()"
       style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin:8px 0 0;background:linear-gradient(to right,#bad6fd,#f7e594);color:#1e3a5f">
-      Đồng bộ 5 shop tiếp theo
+      Bắt đầu đồng bộ
     </button>
     <button class="btn-info-search" id="btnResetSyncSession" type="button"
       onclick="resetSyncTokenSession()"
       style="display:block;width:100%;text-align:center;text-decoration:none;padding:10px;margin-top:8px;background:rgba(255,255,255,.7);color:#7a3040;border:1px solid rgba(245,186,213,.45)">
-      Bắt đầu lại từ shop đang chọn
+      Bắt đầu lại từ đầu danh sách
     </button>
     <div class="info-error" id="syncJsonMsg" style="margin-top:6px"></div>
 </div>
@@ -4187,10 +4173,6 @@ function confirmPass() {
 }  
 
 function toggleOrderInfoModal() {
-  const savedKey = localStorage.getItem('lastInfoKey');
-  if (savedKey && !document.getElementById('infoKey').value) {
-    document.getElementById('infoKey').value = savedKey;
-  }
   setTimeout(() => document.getElementById('infoOrderCode').focus(), 100);
 }
 
@@ -4199,30 +4181,25 @@ function closeOrderInfoModal() {
   document.getElementById('infoResult').classList.remove('show');
   document.getElementById('infoError').classList.remove('show');
   document.getElementById('infoOrderCode').value = '';
-  document.getElementById('infoKeyStatus').textContent = '';
 }
 
 async function fetchOrderInfo() {
-  const code = document.getElementById('infoOrderCode').value.trim();
-  const key  = document.getElementById('infoKey').value.trim();
+  const syncId = document.getElementById('infoOrderCode').value.trim();
   const errEl    = document.getElementById('infoError');
   const resultEl = document.getElementById('infoResult');
   const btn      = document.getElementById('infoSearchBtn');
+  const jsonEl   = document.getElementById('orderInfoJson');
 
   errEl.classList.remove('show');
   resultEl.classList.remove('show');
 
-  if (!code) {
-    errEl.textContent = 'Vui lòng nhập mã đơn hàng.';
+  if (!syncId) {
+    errEl.textContent = 'Vui lòng nhập sync_id.';
     errEl.classList.add('show'); return;
   }
-  if (!key) {
-    errEl.textContent = 'Vui lòng nhập key.';
-    errEl.classList.add('show'); return;
-  }
-  localStorage.setItem('lastInfoKey', key);
   btn.disabled = true;
-  btn.textContent = 'Đang tra cứu...';
+  btn.textContent = 'Đang lấy JSON...';
+  if (jsonEl) jsonEl.textContent = 'Đang tải...';
 
   try {
     const res = await fetch('/api/order-info', {
@@ -4231,197 +4208,26 @@ async function fetchOrderInfo() {
         'Content-Type': 'application/json',
         'X-User-ID': localStorage.getItem('chiaki_id') || ''
       },
-      body: JSON.stringify({ order_code: code, key })
+      body: JSON.stringify({ sync_id: syncId })
     });
     const data = await res.json();
 
-    if (data.error) {
+    if (!res.ok || data.error) {
       errEl.textContent = data.error;
       errEl.classList.add('show'); return;
     }
-
-const STATUS_MAP = {
-    'request_out':               { text: '✨ Đã nhận đơn hàng',      bg: 'rgba(253,230,138,.4)',  color: '#92400e' },
-    'out_products_in_progress':  { text: '📦 Đã tạo MVĐ/Chờ lấy hàng', bg: 'rgba(253,186,116,.35)', color: '#c2410c' },
-    'delivering':                { text: '🚚 Đang giao hàng',           bg: 'rgba(147,197,253,.35)', color: '#1e40af' },
-    'done':                      { text: '🎉 Đã giao hàng',                bg: 'rgba(167,243,208,.4)',  color: '#065f46' },
-    'cancelled_wo_out_products': { text: '❌ Đã huỷ',                    bg: 'rgba(254,202,202,.5)',  color: '#991b1b' },
-    'cancelled':                 { text: '❌ Đã huỷ',                    bg: 'rgba(254,202,202,.5)',  color: '#991b1b' },
-    're_in':                     { text: '↩️ Giao thất bại/Hoàn hàng', bg: 'rgba(253,186,116,.35)', color: '#92400e' },
-    'request_in':                { text: '⏳ Chờ xác nhận',              bg: 'rgba(216,180,254,.3)',  color: '#5b4b8a' },
-}
-
-const statusBanner = document.getElementById('irStatusBanner')
-if (statusBanner) {
-    const rawStatus = (data.status || '').trim()
-    const matched = STATUS_MAP[rawStatus] || { text: '🔵 ' + rawStatus, bg: 'rgba(198,181,255,.25)', color: '#5b4b8a' }
-    statusBanner.textContent = matched.text
-    statusBanner.style.background = matched.bg
-    statusBanner.style.color = matched.color
-    statusBanner.style.display = rawStatus ? 'block' : 'none'
-}
-
-    document.getElementById('irCode').textContent     = data.order_code    || '—';
-    document.getElementById('irShop').textContent     = data.shop_name     || '—';
-    document.getElementById('irDate').textContent     = data.order_date    || '—';
-    document.getElementById('irName').textContent     = data.customer_name || '—';
-    document.getElementById('irCustomerId').textContent = data.customer_id || '—';
-    document.getElementById('irPhone').textContent    = data.phone         || '—';
-    document.getElementById('irEmail').textContent    = data.email         || '—';
-    document.getElementById('irAddress').textContent  = data.address       || '—';
-
-  const irProduct = document.getElementById('irProduct');
-  if (data.products && data.products.length > 0) {
-      irProduct.innerHTML = data.products.map((p, i) =>
-          `<div style="padding:5px 0;border-bottom:1px solid rgba(198,181,255,.15);line-height:1.6">
-              <span style="font-weight:700;color:#3b3551">${i+1}. ${p.name}</span>
-              ${p.shop_name ? `<span style="font-size:10px;background:rgba(167,139,250,.2);color:#5b4b8a;border-radius:10px;padding:1px 7px;margin-left:5px">${p.shop_name}</span>` : ''}
-              <br>
-              <span style="font-size:11px;color:#9b8bb4">
-                  ${p.code ? `Mã: <b style="font-family:monospace">${p.code}</b> &nbsp;` : ''}
-                  SL: <b>${p.quantity}</b>
-                  ${p.price ? ` &nbsp;Giá: <b>${Number(p.price).toLocaleString('vi-VN')}đ</b>` : ''}
-              </span>
-          </div>`
-      ).join('');
-  } else {
-      irProduct.textContent = data.product || '—';
-  }
-    document.getElementById('irQuantity').textContent = data.quantity      ?? '—';
-
-    const uhEl = document.getElementById('irUrlHistory');
-    if (uhEl) {
-        if (data.url_history && data.url_history.length > 0) {
-            const deduped = data.url_history.filter((item, i, arr) =>
-                i === 0 || item.url !== arr[i - 1].url
-            )
-            uhEl.innerHTML = deduped.map((item) => {
-                const url = item.url || '';
-                const time = item.time || '';
-                const storeId = (url.match(/store_id=(\d+)/) || [])[1] || '';
-                const storeName = storeId ? ((window.shopIdNameMap && window.shopIdNameMap[storeId]) || `Store #${storeId}`) : '';
-                const productId = (url.match(/product_id=(\d+)/) || [])[1] || '';
-                const productCode = (url.match(/product_code=([^&]+)/) || [])[1] || '';
-
-                let icon = '🔗', action = '', bg = 'rgba(255,255,255,.4)', border = 'rgba(198,181,255,.2)', color = '#4c3f72';
-
-                if (url.includes('add_to_cart')) {
-                    const isBuyNow = url.includes('is_buy_now=1');
-                    const qty = (url.match(/quantity=(\d+)/) || [])[1] || '1';
-                    if (isBuyNow) {
-                        icon = '📦';
-                        action = `<b style="color:#059669">ĐÃ ĐẶT HÀNG</b>`;
-                        if (productCode) action += ` — <span style="font-family:monospace;color:#7c3aed">${productCode}</span>`;
-                        if (storeName) action += ` tại <b>${storeName}</b>`;
-                        action += ` <span style="background:rgba(16,185,129,.15);color:#065f46;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700">SL: ${qty}</span>`;
-                        bg = 'rgba(167,243,208,.25)'; border = 'rgba(110,231,183,.4)';
-                    } else {
-                        icon = '➕';
-                        action = `Thêm giỏ hàng`;
-                        if (productCode) action += ` — <span style="font-family:monospace;color:#7c3aed">${productCode}</span>`;
-                        if (storeName) action += ` tại <b>${storeName}</b>`;
-                        action += ` <span style="background:rgba(198,181,255,.2);color:#5b4b8a;border-radius:6px;padding:1px 7px;font-size:10px">SL: ${qty}</span>`;
-                    }
-                } else if (url.includes('products_screen')) {
-                    const term = decodeURIComponent((url.match(/term=([^&]+)/) || [])[1] || '');
-                    icon = '🔍';
-                    action = `Tìm kiếm <b>"${term}"</b>`;
-                } else if (url.includes('change_quantity')) {
-                    const qty = (url.match(/quantity=(\d+)/) || [])[1] || '?'
-                    icon = '✏️'
-                    action = `Đổi số lượng → <b>${qty}</b>`
-                    if (productCode) action += ` — <span style="font-family:monospace;color:#7c3aed">${productCode}</span>`
-                    if (storeName) action += ` tại <b>${storeName}</b>`
-
-                } else if (url.includes('detailproduct_screen')) {
-                    icon = '👁';
-                    action = `Xem sản phẩm`;
-                    if (productCode) action += ` <span style="font-family:monospace;color:#7c3aed">${productCode}</span>`;
-                    else if (productId) action += ` <span style="font-family:monospace;color:#9b8bb4">#${productId}</span>`;
-                    if (storeName) action += ` tại <b>${storeName}</b>`;
-                }
-
-                return `<div style="padding:5px 8px;border-radius:8px;margin-bottom:4px;border:1px solid ${border};background:${bg};display:flex;justify-content:space-between;align-items:center;gap:8px;color:${color}">
-                    <span style="font-size:12px">${icon} ${action}</span>
-                    <span style="color:#b0a0c8;font-size:10px;white-space:nowrap;flex-shrink:0">${time}</span>
-                </div>`;
-            }).join('');
-    } else {
-        const srcFrom = (data.source_from || '').toLowerCase()
-        let reason = ''
-
-        if (srcFrom.includes('facebook')) {
-            reason = '📘 Đơn từ <b>Facebook Ads</b>'
-        } else if (srcFrom.includes('google')) {
-            reason = '🔍 Đơn từ <b>Google Ads</b>'
-        } else if (srcFrom.includes('tiktok')) {
-            reason = '🎵 Đơn từ <b>TikTok Ads</b>'
-        } else if (srcFrom.includes('zalo')) {
-            reason = '💬 Đơn từ <b>Zalo</b>'
-        } else if (srcFrom) {
-            reason = `🔗 Đơn từ <b>${data.source_from}</b>`
-        } else {
-            reason = '📭 Không có dữ liệu hành trình'
-        }
-
-        uhEl.innerHTML = `<div style="padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.5);border:1px solid rgba(198,181,255,.2);font-size:12px;color:#7c6fa0">${reason}</div>`
+    if (jsonEl) {
+      jsonEl.textContent = JSON.stringify(data.data ?? data, null, 2);
     }
-}
-
-    document.getElementById('irSource').textContent  = data.source        || '—';
-    document.getElementById('irPayment').textContent  = data.payment       || '—';
-    document.getElementById('irPrepaid').textContent  = data.prepaid_amount || '—';
-    document.getElementById('irDeliveryLocationId').textContent = data.delivery_location_id || '—';
-    document.getElementById('irDistrictDeliveryId').textContent = data.district_delivery_id || '—';
-    document.getElementById('irCommuneDeliveryId').textContent  = data.commune_delivery_id || '—';
-    document.getElementById('irShippingCode').textContent    = data.shipping_code         || '—';
-    document.getElementById('irDeliveryStatus').textContent  = data.delivery_status === 'successful' ? '✨ Đã giao thành công' : (data.delivery_status || '—');
-    document.getElementById('irShipperReceive').textContent  = data.shipper_receive_time  || '—';
-
-    document.getElementById('infoKeyStatus').textContent =
-      data.remaining === -1 || data.remaining === null
-      ? '✅ Key không giới hạn lượt'
-      : `✅ Còn ${data.remaining} lượt sử dụng cho key này`;
     resultEl.classList.add('show');
   } catch(e) {
     errEl.textContent = 'Lỗi kết nối: ' + e.message;
     errEl.classList.add('show');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔍 Tra cứu';
+    btn.textContent = '🔍 Lấy thông tin theo sync_id';
   }
 }
-document.addEventListener('DOMContentLoaded', () => {
-  const keyInput = document.getElementById('infoKey');
-  if (!keyInput) return;
-  let keyTimer;
-  keyInput.addEventListener('input', () => {
-    clearTimeout(keyTimer);
-    const statusEl = document.getElementById('infoKeyStatus');
-    const val = keyInput.value.trim();
-    if (!val) { statusEl.textContent = ''; return; }
-    keyTimer = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/order-info/check-key', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: val })
-        });
-        const d = await res.json();
-        if (d.error) {
-          statusEl.textContent = '❌ ' + d.error;
-          statusEl.style.color = '#dc2626';
-        } else {
-          const unlimited = d.remaining === -1 || d.limit === -1;
-          statusEl.textContent = unlimited
-            ? '✅ Key không giới hạn lượt'
-            : `✅ Key hợp lệ — còn ${d.remaining}/${d.limit} lượt`;
-          statusEl.style.color = (unlimited || d.remaining > 0) ? '#059669' : '#dc2626';
-        }
-      } catch { statusEl.textContent = ''; }
-    }, 600);
-  });
-});
 
 function selectShop(id) {
   if (hanoiVisible) {
@@ -4874,26 +4680,7 @@ function setSyncJsonMessage(message, type = '') {
 }
 
 const SYNC_TOKEN_BATCH_SIZE = 5;
-let syncTokenSession = { shopIds: [], index: 0, completed: false, syncing: false };
-
-function buildSyncTokenSession(startShopId = '') {
-  if (!syncShops.length) return [];
-  const startIndex = syncShops.findIndex(shop => shop.id === startShopId);
-  const index = startIndex >= 0 ? startIndex : 0;
-  return syncShops.slice(index).map(shop => shop.id);
-}
-
-function getSyncShopName(shopId) {
-  return syncShops.find(shop => shop.id === shopId)?.name || shopId || '—';
-}
-
-function getCurrentSyncBatchIds() {
-  if (!syncTokenSession.shopIds.length || syncTokenSession.completed) return [];
-  return syncTokenSession.shopIds.slice(
-    syncTokenSession.index,
-    syncTokenSession.index + SYNC_TOKEN_BATCH_SIZE
-  );
-}
+let syncTokenSession = { index: 0, total: 0, completed: false, syncing: false };
 
 async function reloadOrderViewsAfterSync() {
   currentPage = 1;
@@ -4906,56 +4693,41 @@ async function reloadOrderViewsAfterSync() {
 
 function updateSyncTokenSessionHint() {
   const hint = document.getElementById('syncSessionHint');
-  const select = document.getElementById('syncShopId');
   const tokenInput = document.getElementById('syncJsonAccessToken');
   const btn = document.getElementById('btnSyncJsonOrders');
-  if (!hint || !select || !btn) return;
-  select.disabled = syncTokenSession.syncing;
+  if (!hint || !btn) return;
   if (tokenInput) tokenInput.disabled = syncTokenSession.syncing;
 
-  if (!syncTokenSession.shopIds.length) {
-    hint.textContent = syncShops.length
-      ? 'Chọn shop bắt đầu, nhập token seller, rồi bấm đồng bộ. Hệ thống sẽ tự chạy tối đa 5 shop và dừng để nhập token tiếp theo.'
-      : 'Chưa tải được danh sách shop.';
-    btn.textContent = 'Đồng bộ 5 shop tiếp theo';
-    btn.disabled = !syncShops.length;
-    return;
-  }
-
-  const currentShopId = syncTokenSession.shopIds[syncTokenSession.index] || '';
-  if (currentShopId) select.value = currentShopId;
+  const total = syncTokenSession.total || syncShops.length || 0;
 
   if (syncTokenSession.completed) {
-    hint.textContent = `Đã đồng bộ xong toàn bộ ${syncTokenSession.shopIds.length} shop trong danh sách. Phiên đồng bộ đã kết thúc.`;
+    hint.textContent = `Đã đồng bộ xong toàn bộ ${total} shop trong danh sách. Phiên đồng bộ đã kết thúc.`;
     btn.textContent = 'Đã đồng bộ hết danh sách';
     btn.disabled = true;
     if (tokenInput) tokenInput.value = '';
     return;
   }
 
-  const batchIds = getCurrentSyncBatchIds();
-  const batchStart = syncTokenSession.index + 1;
-  const batchEnd = syncTokenSession.index + batchIds.length;
-  const shopNames = batchIds.map(shopId => `${shopId} · ${getSyncShopName(shopId)}`).join('; ');
-  hint.textContent = `Sắp đồng bộ shop ${batchStart}-${batchEnd}/${syncTokenSession.shopIds.length}: ${shopNames}. Nhập token, hệ thống sẽ chạy hết nhóm này rồi yêu cầu token tiếp theo.`;
-  btn.textContent = `Đồng bộ ${batchIds.length} shop tiếp theo`;
-  btn.disabled = syncTokenSession.syncing || !batchIds.length;
+  const remaining = total ? Math.max(total - syncTokenSession.index, 0) : SYNC_TOKEN_BATCH_SIZE;
+  const batchSize = Math.min(SYNC_TOKEN_BATCH_SIZE, remaining || SYNC_TOKEN_BATCH_SIZE);
+  if (!total && !syncShops.length) {
+    hint.textContent = 'Đang tải danh sách shop. Vẫn có thể nhập token, server sẽ tự lấy danh sách khi đồng bộ.';
+  } else if (syncTokenSession.index === 0) {
+    hint.textContent = `Nhập token để server tự quét ${batchSize} shop đầu tiên. Shop nào không có đơn sẽ bỏ qua.`;
+  } else {
+    hint.textContent = `Đã xử lý ${syncTokenSession.index}/${total} shop. Nhập token mới để server quét ${batchSize} shop tiếp theo.`;
+  }
+  btn.textContent = syncTokenSession.index === 0 ? 'Bắt đầu đồng bộ' : `Đồng bộ ${batchSize} shop tiếp theo`;
+  btn.disabled = syncTokenSession.syncing || (total > 0 && syncTokenSession.index >= total);
 }
 
 function prepareSyncTokenSession() {
-  const select = document.getElementById('syncShopId');
-  const selectedShopId = select?.value.trim() || syncShops[0]?.id || '';
-  if (select && !select.value && selectedShopId) select.value = selectedShopId;
-  if (!selectedShopId || !syncShops.length) {
-    syncTokenSession = { shopIds: [], index: 0, completed: false, syncing: false };
-  } else {
-    syncTokenSession = {
-      shopIds: buildSyncTokenSession(selectedShopId),
-      index: 0,
-      completed: false,
-      syncing: false
-    };
-  }
+  syncTokenSession = {
+    index: 0,
+    total: syncShops.length || 0,
+    completed: false,
+    syncing: false
+  };
   updateSyncTokenSessionHint();
 }
 
@@ -4963,118 +4735,93 @@ function resetSyncTokenSession() {
   prepareSyncTokenSession();
   const tokenInput = document.getElementById('syncJsonAccessToken');
   if (tokenInput) tokenInput.value = '';
-  if (syncTokenSession.shopIds.length) {
-    setSyncJsonMessage(`Đã bắt đầu lại phiên từ shop ${syncTokenSession.shopIds[0]}.`, 'ok');
-  } else {
-    setSyncJsonMessage('Vui lòng chọn shop bắt đầu.', 'err');
-  }
+  setSyncJsonMessage('Đã bắt đầu lại phiên đồng bộ từ đầu danh sách shop.', 'ok');
 }
 
 async function syncCurrentTokenShop() {
-  const selectedShopId = document.getElementById('syncShopId')?.value.trim() || '';
   const token = document.getElementById('syncJsonAccessToken')?.value.trim() || '';
   const btn = document.getElementById('btnSyncJsonOrders');
 
-  if (!selectedShopId && !syncShops.length) {
-    setSyncJsonMessage('Vui lòng chọn gian hàng.', 'err');
-    return;
-  }
-  if (!syncTokenSession.shopIds.length) {
-    prepareSyncTokenSession();
-  }
   if (syncTokenSession.completed) {
     setSyncJsonMessage('Danh sách shop đã đồng bộ xong. Bấm bắt đầu lại nếu cần chạy lại.', 'ok');
     return;
   }
-  const batchIds = getCurrentSyncBatchIds();
-  if (!batchIds.length) {
-    syncTokenSession.completed = true;
-    updateSyncTokenSessionHint();
-    setSyncJsonMessage('Danh sách shop đã đồng bộ xong.', 'ok');
-    return;
-  }
   if (!token) {
-    setSyncJsonMessage(`Vui lòng nhập token seller để đồng bộ ${batchIds.length} shop tiếp theo.`, 'err');
+    setSyncJsonMessage('Vui lòng nhập token seller để server đồng bộ 5 shop tiếp theo.', 'err');
     return;
   }
 
   syncTokenSession.syncing = true;
   if (btn) {
     btn.disabled = true;
-    btn.textContent = `Đang đồng bộ 0/${batchIds.length} shop...`;
+    btn.textContent = 'Server đang quét 5 shop...';
   }
   updateSyncTokenSessionHint();
 
-  let syncedAny = false;
-  let batchSucceeded = false;
-  const totals = { synced: 0, unique: 0, added: 0, removed: 0 };
   const batchStartIndex = syncTokenSession.index;
   try {
-    for (let i = 0; i < batchIds.length; i += 1) {
-      const activeShopId = batchIds[i];
-      if (btn) btn.textContent = `Đang đồng bộ ${i + 1}/${batchIds.length} shop...`;
-      setSyncJsonMessage(`Đang đồng bộ shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}: ${activeShopId} · ${getSyncShopName(activeShopId)}...`, '');
-
-      const res = await fetch('/api/sync-token-orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-ID': localStorage.getItem('chiaki_id') || ''
-        },
-        body: JSON.stringify({ shop_id: activeShopId, access_token: token })
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(`${activeShopId}: ${data.error || `HTTP ${res.status}`}`);
+    setSyncJsonMessage(`Server đang đồng bộ shop ${batchStartIndex + 1} đến ${batchStartIndex + SYNC_TOKEN_BATCH_SIZE}...`, '');
+    const res = await fetch('/api/sync-token-orders-batch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-ID': localStorage.getItem('chiaki_id') || ''
+      },
+      body: JSON.stringify({ access_token: token, start_index: syncTokenSession.index })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      if (typeof data.next_index === 'number' && data.next_index > syncTokenSession.index) {
+        syncTokenSession.index = data.next_index;
+        syncTokenSession.total = Number(data.total_shops || syncTokenSession.total || 0);
+        const partialTotals = data.totals || {};
+        lastSyncDelta = {
+          added: Number(partialTotals.added || 0),
+          removed: Number(partialTotals.removed || 0)
+        };
+        await reloadOrderViewsAfterSync();
       }
-
-      syncedAny = true;
-      totals.synced += Number(data.synced || 0);
-      totals.unique += Number(data.unique_orders || data.synced || 0);
-      totals.added += Number(data.added_count || 0);
-      totals.removed += Number(data.removed_count || 0);
-      syncTokenSession.index += 1;
+      throw new Error(data.error || `HTTP ${res.status}`);
     }
 
-    batchSucceeded = true;
+    const totals = data.totals || {};
+    syncTokenSession.index = Number(data.next_index || syncTokenSession.index);
+    syncTokenSession.total = Number(data.total_shops || syncTokenSession.total || syncShops.length || 0);
+    syncTokenSession.completed = Boolean(data.completed);
     lastSyncDelta = {
-      added: totals.added,
-      removed: totals.removed
+      added: Number(totals.added || 0),
+      removed: Number(totals.removed || 0)
     };
     await reloadOrderViewsAfterSync();
 
-    if (syncTokenSession.index >= syncTokenSession.shopIds.length) {
-      syncTokenSession.index = syncTokenSession.shopIds.length;
-      syncTokenSession.completed = true;
+    const tokenInput = document.getElementById('syncJsonAccessToken');
+    if (tokenInput) {
+      tokenInput.value = '';
+      tokenInput.focus();
+    }
+
+    const processed = Number(data.batch_size || 0);
+    const empty = Number(totals.empty || 0);
+    const unique = Number(totals.unique_orders || 0);
+    const synced = Number(totals.synced || 0);
+    const added = Number(totals.added || 0);
+    const removed = Number(totals.removed || 0);
+
+    if (syncTokenSession.completed) {
       setSyncJsonMessage(
-        `Đã đồng bộ xong toàn bộ ${syncTokenSession.shopIds.length} shop. Tổng ${totals.unique} đơn (${totals.synced} dòng sản phẩm) · +${totals.added} mới · -${totals.removed} đã bàn giao/huỷ.`,
+        `Đã đồng bộ xong toàn bộ ${syncTokenSession.total} shop. Nhóm cuối xử lý ${processed} shop, ${empty} shop không có đơn. Tổng nhóm: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ. Phiên đồng bộ kết thúc.`,
         'ok'
       );
     } else {
-      const nextBatchIds = getCurrentSyncBatchIds();
       setSyncJsonMessage(
-        `Đã đồng bộ shop ${batchStartIndex + 1}-${syncTokenSession.index}/${syncTokenSession.shopIds.length}: ${totals.unique} đơn (${totals.synced} dòng sản phẩm) · +${totals.added} mới · -${totals.removed} đã bàn giao/huỷ. Nhập token mới để chạy ${nextBatchIds.length} shop tiếp theo.`,
+        `Đã xử lý shop ${batchStartIndex + 1}-${syncTokenSession.index}/${syncTokenSession.total}: ${processed} shop, ${empty} shop không có đơn. Tổng nhóm: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ. Nhập token mới để server quét 5 shop tiếp theo.`,
         'ok'
       );
     }
   } catch (e) {
-    if (syncedAny) {
-      lastSyncDelta = {
-        added: totals.added,
-        removed: totals.removed
-      };
-      await reloadOrderViewsAfterSync();
-    }
-    setSyncJsonMessage(`Lỗi đồng bộ: ${e.message}. Đã lưu thành công ${syncTokenSession.index - batchStartIndex}/${batchIds.length} shop trong nhóm này.`, 'err');
+    setSyncJsonMessage(`Lỗi đồng bộ: ${e.message}. Server đã xử lý ${syncTokenSession.index - batchStartIndex}/${SYNC_TOKEN_BATCH_SIZE} shop trong nhóm này.`, 'err');
   } finally {
     syncTokenSession.syncing = false;
-    if (batchSucceeded) {
-      const tokenInput = document.getElementById('syncJsonAccessToken');
-      if (tokenInput) {
-        tokenInput.value = '';
-        tokenInput.focus();
-      }
-    }
     updateSyncTokenSessionHint();
   }
 }
@@ -5122,21 +4869,6 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-function populateSyncShopSelect() {
-  const select = document.getElementById("syncShopId");
-  if (!select) return;
-
-  const selected = select.value;
-  const options = syncShops.map(shop =>
-    '<option value="' + escapeHtml(shop.id) + '">' + escapeHtml(shop.id) + ' · ' + escapeHtml(shop.name) + '</option>'
-  ).join("");
-
-  select.innerHTML = '<option value="">Mời chọn</option>' + options;
-  if (syncShops.some(shop => shop.id === selected)) {
-    select.value = selected;
-  }
-}
-
 async function loadSyncShops() {
   try {
     const shopsRes = await fetch("/api/shops-list", { cache: "no-store" });
@@ -5152,102 +4884,14 @@ async function loadSyncShops() {
       name: String(shop.shop_name || shop.shop_id || "").trim()
     })).filter(shop => shop.id);
     window.shopIdNameMap = Object.fromEntries(syncShops.map(shop => [shop.id, shop.name]));
-    populateSyncShopSelect();
     prepareSyncTokenSession();
   } catch (e) {
     console.error("loadSyncShops error", e);
     syncShops = [];
     window.shopIdNameMap = {};
-    populateSyncShopSelect();
     prepareSyncTokenSession();
   }
 }
-async function fetchSideOrderInfo() {
-  const code = document.getElementById('sideInfoOrderCode').value.trim();
-  const key  = document.getElementById('sideInfoKey').value.trim();
-  const errEl = document.getElementById('sideInfoError');
-  const resultEl = document.getElementById('sideInfoResult');
-  const btn = document.getElementById('btnSideInfo');
-
-  errEl.style.display = 'none';
-  resultEl.style.display = 'none';
-
-  if (!code) { errEl.textContent = 'Vui lòng nhập mã đơn hàng.'; errEl.style.display = 'block'; return; }
-  if (!key)  { errEl.textContent = 'Vui lòng nhập key tra cứu.'; errEl.style.display = 'block'; return; }
-
-  localStorage.setItem('lastInfoKey', key);
-
-  const modalKey = document.getElementById('infoKey');
-  if (modalKey && !modalKey.value) modalKey.value = key;
-
-  btn.disabled = true;
-  btn.innerHTML = '<span>⏳</span> Đang tra cứu...';
-
-  try {
-    const res  = await fetch('/api/order-info', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-ID': localStorage.getItem('chiaki_id') || ''
-      },
-      body: JSON.stringify({ ordercode: code, key })
-    });
-    const data = await res.json();
-
-    if (data.error) {
-      errEl.textContent = data.error;
-      errEl.style.display = 'block';
-      return;
-    }
-
-    const STATUSMAP = {
-      'request_out':              { text: 'Đã nhận đơn hàng',        bg: 'rgba(253,230,138,.4)',  color: '#92400e' },
-      'out_products_in_progress':   { text: 'Đang MVC - Chờ lấy hàng', bg: 'rgba(253,186,116,.35)', color: '#c2410c' },
-      'delivering':              { text: 'Đang giao hàng',           bg: 'rgba(147,197,253,.35)', color: '#1e40af' },
-      'done':                    { text: 'Đã giao hàng',             bg: 'rgba(167,243,208,.4)',  color: '#065f46' },
-      'cancelled_wo_out_products':  { text: 'Đã huỷ',                   bg: 'rgba(254,202,202,.5)',  color: '#991b1b' },
-      'cancelled':               { text: 'Đã huỷ',                   bg: 'rgba(254,202,202,.5)',  color: '#991b1b' },
-      'rein':                    { text: 'Giao thất bại - Hoàn hàng',bg: 'rgba(253,186,116,.35)', color: '#92400e' },
-      'request_in':               { text: 'Chờ xác nhận',             bg: 'rgba(216,180,254,.3)',  color: '#5b4b8a' },
-    };
-    const banner = document.getElementById('sideStatusBanner');
-    const raw    = (data.status || '').trim();
-    const matched = STATUSMAP[raw] || { text: raw, bg: 'rgba(198,181,255,.25)', color: '#5b4b8a' };
-    banner.textContent       = matched.text;
-    banner.style.background  = matched.bg;
-    banner.style.color       = matched.color;
-
-    document.getElementById('sideIrCode').textContent     = data.ordercode    || '—';
-    document.getElementById('sideIrShop').textContent     = data.shopname     || '—';
-    document.getElementById('sideIrDate').textContent     = data.orderdate    || '—';
-    document.getElementById('sideIrName').textContent     = data.customername || '—';
-    document.getElementById('sideIrPhone').textContent    = data.phone        || '—';
-    document.getElementById('sideIrAddress').textContent  = data.address      || '—';
-    document.getElementById('sideIrProduct').textContent  = data.product      || '—';
-    document.getElementById('sideIrTotal').textContent    = data.prepaidamount
-      ? Number(data.prepaidamount).toLocaleString('vi') + ' đ'
-      : (data.total ? Number(data.total).toLocaleString('vi') + ' đ' : '—');
-    document.getElementById('sideIrShipping').textContent = data.shippingcode || '—';
-
-    resultEl.style.display = 'block';
-
-  } catch(e) {
-    errEl.textContent = 'Lỗi kết nối: ' + e.message;
-    errEl.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span>🔍</span> Tra cứu';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const savedKey = localStorage.getItem('lastInfoKey');
-  if (savedKey) {
-    const el = document.getElementById('sideInfoKey');
-    if (el) el.value = savedKey;
-  }
-});
-
 function copyOrderCode(btn, fullCode) {
   const parts = fullCode.split('_')
   const codeToCopy = parts.length > 1 ? parts[parts.length - 1] : fullCode
