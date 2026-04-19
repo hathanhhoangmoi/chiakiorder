@@ -1468,6 +1468,15 @@ body.compact-touch-ui #panelOrderInfo{
   color:#3f4d46;
   box-shadow:0 4px 12px rgba(122,191,115,.2);
 }
+.order-code-copy-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.order-code-copy-row .btn-copy-order-main{
+  margin-top:0;
+}
 .sync-id-cell{
   display:flex;
   align-items:center;
@@ -2433,6 +2442,7 @@ body.compact-touch-ui #panelOrderInfo{
           <thead>
             <tr>
               <th>Mã đơn</th>
+              <th>Sync ID</th>
               <th>Ngày đặt</th>
               <th>Gian hàng</th>
               <th>Tên khách hàng</th>
@@ -2479,7 +2489,7 @@ body.compact-touch-ui #panelOrderInfo{
       <table>
         <thead>
           <tr>
-            <th>Mã đơn</th><th>Ngày đặt</th><th>Gian hàng</th>
+            <th>Mã đơn</th><th>Sync ID</th><th>Ngày đặt</th><th>Gian hàng</th>
             <th>Tên khách hàng</th><th>Địa chỉ</th>
             <th>Sản phẩm</th><th>SL</th><th>Tổng tiền</th>
           </tr>
@@ -3823,8 +3833,10 @@ function renderMainOrdersRows(data) {
       return `
         <tr>
           <td>
-            <div class="compact-order-code">${R ? M('••••••••') : escapeTextHtml(normalizedOrderCode)}</div>
-            ${R ? '' : `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>`}
+            <div class="order-code-copy-row">
+              <div class="compact-order-code">${R ? M('••••••••') : escapeTextHtml(normalizedOrderCode)}</div>
+              ${R ? '' : `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>`}
+            </div>
           </td>
           <td><span class="shop-chip">${escapeTextHtml(o.shop_name || o.shop_id || '—')}</span></td>
           <td class="compact-order-cell">${R ? M() : escapeTextHtml(shortenAddressForCompact(o.address))}</td>
@@ -3841,8 +3853,10 @@ function renderMainOrdersRows(data) {
     return `
       <tr>
         <td>
-          <b style="font-family:monospace;font-size:11px">${R ? M('••••••••') : rawOrderCode}</b>
-          ${R ? '' : `<br><button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>`}
+          <div class="order-code-copy-row">
+            <b style="font-family:monospace;font-size:11px">${R ? M('••••••••') : rawOrderCode}</b>
+            ${R ? '' : `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>`}
+          </div>
         </td>
         <td style="font-family:monospace;font-size:11px;color:#7c6fa0">
           ${R ? M() : `
@@ -3928,26 +3942,40 @@ function renderHanoiTable(data) {
 
   const tbody = document.getElementById('tbodyHanoi');
   if (!count) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">
       <div class="empty-icon">📭</div><div>Không có đơn nào tại Hà Nội</div>
     </td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map(o => `
-    <tr>
-      <td>
-        <b style="font-family:monospace;font-size:11px">${o.order_code || '—'}</b>
-        ${o.order_code ? `<br><button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${String(o.order_code).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">COPY</button>` : ''}
-      </td>
-      <td style="font-size:11px;color:#9b8bb4">${o.order_date || '—'}</td>
-      <td><span class="shop-chip">${o.shop_name || o.shop_id || '—'}</span></td>
-      <td>${o.customer_name || o.buyer_name || '—'}</td>
-      <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.address || '—'}</td>
-      <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
-      <td style="text-align:center">${o.quantity || '—'}</td>
-      <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = data.map(o => {
+    const orderCode = String(o.order_code || '').trim();
+    const escapedOrderCode = escapeJsString(orderCode);
+    const syncId = String(o.sync_id || '').trim();
+    const escapedSyncId = escapeTextHtml(escapeJsString(syncId));
+    return `
+      <tr>
+        <td>
+          <div class="order-code-copy-row">
+            <b style="font-family:monospace;font-size:11px">${escapeTextHtml(orderCode || '—')}</b>
+            ${orderCode ? `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>` : ''}
+          </div>
+        </td>
+        <td style="font-family:monospace;font-size:11px;color:#7c6fa0">
+          <div class="sync-id-cell">
+            <span>${escapeTextHtml(syncId || '—')}</span>
+            ${syncId ? `<button class="btn-copy-order-main" type="button" onclick="copyPlainText(this, '${escapedSyncId}')">COPY</button>` : ''}
+          </div>
+        </td>
+        <td style="font-size:11px;color:#9b8bb4">${escapeTextHtml(o.order_date || '—')}</td>
+        <td><span class="shop-chip">${escapeTextHtml(o.shop_name || o.shop_id || '—')}</span></td>
+        <td>${escapeTextHtml(o.customer_name || o.buyer_name || '—')}</td>
+        <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${escapeTextHtml(o.address || '—')}</td>
+        <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
+        <td style="text-align:center">${escapeTextHtml(o.quantity || '—')}</td>
+        <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 async function loadHanoi() {
@@ -3972,26 +4000,40 @@ function renderNuocHoaTable(data) {
 
   const tbody = document.getElementById('tbodyNuocHoa');
   if (!count) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty">
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">
       <div class="empty-icon">📭</div><div>Không có đơn nào Nước hoa</div>
     </td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map(o => `
-    <tr>
-      <td>
-        <b style="font-family:monospace;font-size:11px">${o.order_code || '—'}</b>
-        ${o.order_code ? `<br><button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${String(o.order_code).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">COPY</button>` : ''}
-      </td>
-      <td style="font-size:11px;color:#9b8bb4">${o.order_date || '—'}</td>
-      <td><span class="shop-chip">${o.shop_name || o.shop_id || '—'}</span></td>
-      <td>${o.customer_name || o.buyer_name || '—'}</td>
-      <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.address || '—'}</td>
-      <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
-      <td style="text-align:center">${o.quantity || '—'}</td>
-      <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = data.map(o => {
+    const orderCode = String(o.order_code || '').trim();
+    const escapedOrderCode = escapeJsString(orderCode);
+    const syncId = String(o.sync_id || '').trim();
+    const escapedSyncId = escapeTextHtml(escapeJsString(syncId));
+    return `
+      <tr>
+        <td>
+          <div class="order-code-copy-row">
+            <b style="font-family:monospace;font-size:11px">${escapeTextHtml(orderCode || '—')}</b>
+            ${orderCode ? `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>` : ''}
+          </div>
+        </td>
+        <td style="font-family:monospace;font-size:11px;color:#7c6fa0">
+          <div class="sync-id-cell">
+            <span>${escapeTextHtml(syncId || '—')}</span>
+            ${syncId ? `<button class="btn-copy-order-main" type="button" onclick="copyPlainText(this, '${escapedSyncId}')">COPY</button>` : ''}
+          </div>
+        </td>
+        <td style="font-size:11px;color:#9b8bb4">${escapeTextHtml(o.order_date || '—')}</td>
+        <td><span class="shop-chip">${escapeTextHtml(o.shop_name || o.shop_id || '—')}</span></td>
+        <td>${escapeTextHtml(o.customer_name || o.buyer_name || '—')}</td>
+        <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${escapeTextHtml(o.address || '—')}</td>
+        <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
+        <td style="text-align:center">${escapeTextHtml(o.quantity || '—')}</td>
+        <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
+      </tr>
+    `;
+  }).join('');
 }
 
 let nuocHoaVisible = false;
@@ -4795,10 +4837,15 @@ function renderMienBacTable(data) {
     tbody.innerHTML = `<tr><td colspan="8" class="empty"><div class="empty-icon">📭</div><div>Không có đơn nào tại Miền Bắc</div></td></tr>`;
     return;
   }
-  tbody.innerHTML = data.map(o => `<tr>
+  tbody.innerHTML = data.map(o => {
+    const orderCode = String(o.order_code || '').trim();
+    const escapedOrderCode = escapeJsString(orderCode);
+    return `<tr>
     <td>
-      <b style="font-family:monospace;font-size:11px">${o.order_code || '—'}</b>
-      ${o.order_code ? `<br><button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${String(o.order_code).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')">COPY</button>` : ''}
+      <div class="order-code-copy-row">
+        <b style="font-family:monospace;font-size:11px">${escapeTextHtml(orderCode || '—')}</b>
+        ${orderCode ? `<button class="btn-copy-order-main" type="button" onclick="copyOrderCode(this, '${escapedOrderCode}')">COPY</button>` : ''}
+      </div>
     </td>
     <td style="font-size:11px;color:#9b8bb4">${o.order_date || '—'}</td>
     <td><span class="shop-chip">${o.shop_name || o.shop_id || '—'}</span></td>
@@ -4807,7 +4854,8 @@ function renderMienBacTable(data) {
     <td style="max-width:220px;white-space:normal;word-break:break-word;line-height:1.5">${o.product || '—'}</td>
     <td style="text-align:center">${o.quantity || '—'}</td>
     <td><b>${o.total ? Number(o.total).toLocaleString('vi') + '₫' : '—'}</b></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
 }
 
 async function loadMienBac() {
@@ -4843,7 +4891,13 @@ function openWaitingJsonRequest() {
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = '/api/sync-json-request';
-  form.target = '_blank';
+  const popupName = `chiaki_json_${Date.now()}`;
+  const popup = window.open(
+    'about:blank',
+    popupName,
+    'popup=yes,width=980,height=760,left=80,top=60,resizable=yes,scrollbars=yes'
+  );
+  form.target = popup ? popupName : '_blank';
   form.style.display = 'none';
 
   [
@@ -4861,7 +4915,8 @@ function openWaitingJsonRequest() {
   document.body.appendChild(form);
   form.submit();
   form.remove();
-  setSyncJsonMessage('Đã mở tab JSON. Copy toàn bộ JSON trả về rồi paste vào ô bên dưới.', 'ok');
+  if (popup) popup.focus();
+  setSyncJsonMessage('Đã mở cửa sổ JSON. Copy toàn bộ JSON trả về rồi paste vào ô bên dưới.', 'ok');
 }
 
 async function syncWaitingJsonOrders() {
