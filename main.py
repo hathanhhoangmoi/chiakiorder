@@ -421,6 +421,108 @@ async def fetch_order_view_json_with_curl(sync_id: str):
         raise ValueError(f"curl không trả JSON hợp lệ: {exc}") from exc
 
 
+async def fetch_order_view_payload(sync_id: str) -> tuple[dict, str, str]:
+    url, params, headers = build_order_view_request(sync_id)
+    request_url = f"{url}?sync_id={sync_id}"
+    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
+        res = await client.get(url, params=params, headers=headers)
+
+    transport = "httpx"
+    if res.status_code < 200 or res.status_code >= 300:
+        if is_cloudflare_challenge_response(res):
+            return await fetch_order_view_json_with_curl(sync_id), "curl-fallback", request_url
+        detail = res.text[:500] if res.text else ""
+        raise RuntimeError(f"API Chiaki trả HTTP {res.status_code}. {detail}".strip())
+
+    try:
+        return res.json(), transport, request_url
+    except Exception as exc:
+        text = res.text[:2000] if res.text else ""
+        if text.lstrip().startswith("<") and ("Just a moment" in text or "Cloudflare" in text):
+            return await fetch_order_view_json_with_curl(sync_id), "curl-fallback", request_url
+        raise ValueError(f"API Chiaki không trả JSON hợp lệ: {exc}") from exc
+
+
+def format_vnd(value) -> str:
+    try:
+        if value in (None, ""):
+            return "—"
+        amount = int(float(str(value).replace(",", "").replace("đ", "").strip()))
+        return f"{amount:,} đ".replace(",", ".")
+    except Exception:
+        return str(value or "—")
+
+
+def summarize_order_view_payload(payload, requested_sync_id: str = "") -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("JSON thông tin đơn hàng phải là object.")
+
+    result = payload.get("result") or {}
+    if not isinstance(result, dict):
+        raise ValueError("JSON không có trường result hợp lệ.")
+
+    order = result.get("order") or {}
+    if not isinstance(order, dict):
+        raise ValueError("JSON không có trường result.order hợp lệ.")
+
+    items = result.get("items") if isinstance(result.get("items"), list) else []
+    sellers = result.get("sellers") if isinstance(result.get("sellers"), list) else []
+    status_data = order.get("status") if isinstance(order.get("status"), dict) else {}
+    payment = order.get("payment") if isinstance(order.get("payment"), dict) else {}
+    shipping = order.get("shipping") if isinstance(order.get("shipping"), dict) else {}
+
+    item_summaries = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        item_summaries.append({
+            "name": item.get("name") or "—",
+            "product_code": item.get("product_code") or "—",
+            "quantity": item.get("quantity") or "—",
+            "unit_price": format_vnd(item.get("unit_price")),
+            "item_amount": format_vnd(item.get("item_amount")),
+            "store_name": item.get("store_name") or "—",
+            "image_url": item.get("image_url") or "",
+        })
+
+    seller_names = [
+        str(seller.get("name") or seller.get("id") or "").strip()
+        for seller in sellers
+        if isinstance(seller, dict) and (seller.get("name") or seller.get("id"))
+    ]
+
+    return {
+        "sync_id": order.get("sync_id") or requested_sync_id or "—",
+        "order_id": order.get("id") or "—",
+        "order_code": order.get("code") or "—",
+        "status": status_data.get("status") or order.get("status_code") or "—",
+        "status_code": order.get("status_code") or status_data.get("code") or "—",
+        "delivery_status": order.get("delivery_status") or "—",
+        "customer_name": order.get("related_user_name") or "—",
+        "phone": order.get("phone") or "—",
+        "address": order.get("delivery_address") or "—",
+        "created_at": order.get("create_time") or "—",
+        "amount": format_vnd(order.get("amount")),
+        "temporary_amount": format_vnd(order.get("amount_temporary")),
+        "shipping_fee": format_vnd(order.get("shipping_fee")),
+        "discount": format_vnd(order.get("discount")),
+        "payment": payment.get("name") or order.get("payment_type") or "—",
+        "shipping_method": shipping.get("name") or order.get("delivery_shipping_mode") or "—",
+        "shipper": order.get("shipper_full_name") or "—",
+        "shipping_code": order.get("shipping_code") or "—",
+        "delivery_text": order.get("deliveryText") or "—",
+        "delivery_location_id": order.get("delivery_location_id") or "—",
+        "district_delivery_id": order.get("district_delivery_id") or "—",
+        "commune_delivery_id": order.get("commune_delivery_id") or "—",
+        "warehouse": order.get("warehouse_name") or order.get("warehouse_id") or "—",
+        "store_code": order.get("store_code") or "—",
+        "platform": order.get("platform") or "—",
+        "seller_names": seller_names,
+        "items": item_summaries,
+        "item_count": len(item_summaries),
+    }
+
+
 def first_non_empty(mapping: dict | None, keys: list[str]):
     if not isinstance(mapping, dict):
         return None
@@ -1273,61 +1375,46 @@ def delete_taken_order(request: Request, body: dict, db: Session = Depends(get_d
         "deleted_taken_rows": deleted_taken_count,
     }
 
+@app.get("/api/order-info/raw")
+async def get_order_info_raw(sync_id: str = Query(""), user_id: str = Query("")):
+    sync_id = str(sync_id or "").strip()
+    if not get_user_capabilities(str(user_id or "").strip()).get("admin_tools"):
+        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
+    if not sync_id:
+        return JSONResponse({"error": "Vui lòng nhập sync_id."}, status_code=400)
+
+    try:
+        data, _transport, _request_url = await fetch_order_view_payload(sync_id)
+        return data
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=502)
+
+
 @app.post("/api/order-info")
 async def get_order_info(request: Request, body: dict, db: Session = Depends(get_db)):
     sync_id = str(body.get("sync_id", body.get("syncid", "")) or "").strip()
     if not sync_id:
         return JSONResponse({"error": "Vui lòng nhập sync_id."}, status_code=400)
 
-    url, params, headers = build_order_view_request(sync_id)
-    try:
-        async with httpx.AsyncClient(timeout=20, follow_redirects=True) as client:
-            res = await client.get(url, params=params, headers=headers)
-    except Exception as e:
-        return JSONResponse({"error": f"Lỗi khi gọi API Chiaki: {str(e)}"}, status_code=502)
-
-    transport = "httpx"
-    if res.status_code < 200 or res.status_code >= 300:
-        if is_cloudflare_challenge_response(res):
-            try:
-                data = await fetch_order_view_json_with_curl(sync_id)
-                return {
-                    "ok": True,
-                    "sync_id": sync_id,
-                    "request_url": f"{url}?sync_id={sync_id}",
-                    "transport": "curl-fallback",
-                    "data": data,
-                }
-            except Exception as e:
-                return JSONResponse({
-                    "error": f"API Chiaki trả Cloudflare 403. Fallback curl cũng lỗi: {str(e)}"
-                }, status_code=502)
-        detail = res.text[:500] if res.text else ""
-        return JSONResponse({
-            "error": f"API Chiaki trả HTTP {res.status_code}. {detail}".strip()
-        }, status_code=502)
+    payload = body.get("payload")
+    json_text = str(body.get("json_text", "") or "").strip()
+    if json_text:
+        try:
+            payload = _json.loads(json_text)
+        except Exception as e:
+            return JSONResponse({"error": f"JSON không hợp lệ: {str(e)}"}, status_code=422)
+    if payload is None:
+        return JSONResponse({"error": "Vui lòng dán JSON thông tin đơn hàng."}, status_code=422)
 
     try:
-        data = res.json()
+        summary = summarize_order_view_payload(payload, sync_id)
     except Exception as e:
-        text = res.text[:2000] if res.text else ""
-        if text.lstrip().startswith("<") and ("Just a moment" in text or "Cloudflare" in text):
-            try:
-                data = await fetch_order_view_json_with_curl(sync_id)
-                transport = "curl-fallback"
-            except Exception as curl_exc:
-                return JSONResponse({
-                    "error": f"API Chiaki trả HTML Cloudflare. Fallback curl cũng lỗi: {str(curl_exc)}"
-                }, status_code=502)
-        else:
-            return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {str(e)}"}, status_code=502)
+        return JSONResponse({"error": str(e)}, status_code=422)
 
     return {
         "ok": True,
         "sync_id": sync_id,
-        "request_url": f"{url}?sync_id={sync_id}",
-        "transport": transport,
-        "data": data,
+        "summary": summary,
     }
 
 @app.get("/api/auth/capabilities")
@@ -1467,8 +1554,7 @@ async def sync_token_orders_batch(request: Request, body: dict, db: Session = De
     except Exception:
         start_index = 0
     start_index = max(0, min(start_index, total_shops))
-    batch_size = 5
-    batch_shops = shops[start_index:start_index + batch_size]
+    batch_shops = shops[start_index:]
 
     if not batch_shops:
         return {
@@ -1534,6 +1620,7 @@ async def sync_token_orders_batch(request: Request, body: dict, db: Session = De
         "next_index": next_index,
         "total_shops": total_shops,
         "batch_size": len(batch_shops),
+        "processed_count": len(batch_shops),
         "results": results,
         "totals": totals,
     }
