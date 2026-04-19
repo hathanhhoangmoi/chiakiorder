@@ -1,7 +1,9 @@
+import asyncio
 import json as _json
 import re
 import unicodedata
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 import httpx
 from fastapi import Depends, FastAPI, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -368,8 +370,55 @@ def build_order_view_request(sync_id: str) -> tuple[str, dict, dict]:
         "platform": "ios",
         "imei": "A4184509-4A7A-423B-A0EE-044668760C71",
         "token": "YpuvtHHYC38QZvlRS8lJP3wDmj72iZlGPgBIyTrBWzc6vNXOWI",
-        "Accept": "application/json, text/plain, */*",
+        "User-Agent": "curl/8.7.1",
+        "Accept": "*/*",
     }
+
+
+def is_cloudflare_challenge_response(response: httpx.Response) -> bool:
+    content_type = response.headers.get("content-type", "").lower()
+    text = response.text[:2000] if response.text else ""
+    return (
+        response.status_code == 403
+        and "text/html" in content_type
+        and ("Just a moment" in text or "Cloudflare" in text or "challenge" in text.lower())
+    )
+
+
+async def fetch_order_view_json_with_curl(sync_id: str):
+    url = "https://api.chiaki.vn/api/v2/order-view?" + urlencode({"sync_id": sync_id})
+    cmd = [
+        "curl",
+        "-sS",
+        "--max-time",
+        "25",
+        url,
+        "-H", "Host: api.chiaki.vn",
+        "-H", "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8",
+        "-H", "platform: ios",
+        "-H", "imei: A4184509-4A7A-423B-A0EE-044668760C71",
+        "-H", "token: YpuvtHHYC38QZvlRS8lJP3wDmj72iZlGPgBIyTrBWzc6vNXOWI",
+    ]
+    proc = await asyncio.create_subprocess_exec(
+        *cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate()
+    output = stdout.decode("utf-8", errors="replace").strip()
+    error_output = stderr.decode("utf-8", errors="replace").strip()
+    if proc.returncode != 0:
+        raise RuntimeError(error_output or f"curl thoát với mã {proc.returncode}")
+    if not output:
+        raise RuntimeError("curl không trả dữ liệu.")
+    if output.lstrip().startswith("<"):
+        if "Just a moment" in output or "Cloudflare" in output:
+            raise RuntimeError("Chiaki vẫn trả Cloudflare challenge khi gọi bằng curl.")
+        raise RuntimeError("Chiaki trả HTML thay vì JSON.")
+    try:
+        return _json.loads(output)
+    except Exception as exc:
+        raise ValueError(f"curl không trả JSON hợp lệ: {exc}") from exc
 
 
 def first_non_empty(mapping: dict | None, keys: list[str]):
@@ -1237,7 +1286,22 @@ async def get_order_info(request: Request, body: dict, db: Session = Depends(get
     except Exception as e:
         return JSONResponse({"error": f"Lỗi khi gọi API Chiaki: {str(e)}"}, status_code=502)
 
+    transport = "httpx"
     if res.status_code < 200 or res.status_code >= 300:
+        if is_cloudflare_challenge_response(res):
+            try:
+                data = await fetch_order_view_json_with_curl(sync_id)
+                return {
+                    "ok": True,
+                    "sync_id": sync_id,
+                    "request_url": f"{url}?sync_id={sync_id}",
+                    "transport": "curl-fallback",
+                    "data": data,
+                }
+            except Exception as e:
+                return JSONResponse({
+                    "error": f"API Chiaki trả Cloudflare 403. Fallback curl cũng lỗi: {str(e)}"
+                }, status_code=502)
         detail = res.text[:500] if res.text else ""
         return JSONResponse({
             "error": f"API Chiaki trả HTTP {res.status_code}. {detail}".strip()
@@ -1246,12 +1310,23 @@ async def get_order_info(request: Request, body: dict, db: Session = Depends(get
     try:
         data = res.json()
     except Exception as e:
-        return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {str(e)}"}, status_code=502)
+        text = res.text[:2000] if res.text else ""
+        if text.lstrip().startswith("<") and ("Just a moment" in text or "Cloudflare" in text):
+            try:
+                data = await fetch_order_view_json_with_curl(sync_id)
+                transport = "curl-fallback"
+            except Exception as curl_exc:
+                return JSONResponse({
+                    "error": f"API Chiaki trả HTML Cloudflare. Fallback curl cũng lỗi: {str(curl_exc)}"
+                }, status_code=502)
+        else:
+            return JSONResponse({"error": f"API Chiaki không trả JSON hợp lệ: {str(e)}"}, status_code=502)
 
     return {
         "ok": True,
         "sync_id": sync_id,
         "request_url": f"{url}?sync_id={sync_id}",
+        "transport": transport,
         "data": data,
     }
 
