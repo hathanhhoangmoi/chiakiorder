@@ -2232,10 +2232,10 @@ body.compact-touch-ui #panelOrderInfo{
 
     <div class="info-modal-icon">🗂️</div>
     <div class="info-modal-title">Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
-    <div class="info-modal-sub">Điền token seller để hệ thống tự lấy JSON và lưu dữ liệu gian hàng</div>
+    <div class="info-modal-sub">Điền token seller để hệ thống tự động lấy JSON và lưu dữ liệu theo từng nhóm shop</div>
 
-    <label class="sync-label">Phiên đồng bộ 5 shop</label>
-    <div class="sync-hint" id="syncSessionHint">Chọn shop bắt đầu, nhập token seller của shop đang hiển thị, rồi bấm đồng bộ. Mỗi shop cần token mới.</div>
+    <label class="sync-label">Phiên đồng bộ theo nhóm 5 shop</label>
+    <div class="sync-hint" id="syncSessionHint">Chọn shop bắt đầu, nhập token seller, rồi bấm đồng bộ. Hệ thống sẽ tự chạy tối đa 5 shop và dừng để nhập token tiếp theo.</div>
     <select class="info-input" id="syncShopId" onchange="prepareSyncTokenSession()">
       <option value="">Mời chọn</option>
     </select>
@@ -2245,12 +2245,12 @@ body.compact-touch-ui #panelOrderInfo{
     <button class="btn-info-search" id="btnSyncJsonOrders" type="button"
       onclick="syncCurrentTokenShop()"
       style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin:8px 0 0;background:linear-gradient(to right,#bad6fd,#f7e594);color:#1e3a5f">
-      Đồng bộ shop này
+      Đồng bộ 5 shop tiếp theo
     </button>
     <button class="btn-info-search" id="btnResetSyncSession" type="button"
       onclick="resetSyncTokenSession()"
       style="display:block;width:100%;text-align:center;text-decoration:none;padding:10px;margin-top:8px;background:rgba(255,255,255,.7);color:#7a3040;border:1px solid rgba(245,186,213,.45)">
-      Bắt đầu lại phiên 5 shop
+      Bắt đầu lại từ shop đang chọn
     </button>
     <div class="info-error" id="syncJsonMsg" style="margin-top:6px"></div>
 </div>
@@ -4873,21 +4873,35 @@ function setSyncJsonMessage(message, type = '') {
   msg.className = type ? `sync-msg ${type}` : 'sync-msg';
 }
 
-const SYNC_TOKEN_SESSION_SIZE = 5;
-let syncTokenSession = { shopIds: [], index: 0, completed: false };
+const SYNC_TOKEN_BATCH_SIZE = 5;
+let syncTokenSession = { shopIds: [], index: 0, completed: false, syncing: false };
 
 function buildSyncTokenSession(startShopId = '') {
+  if (!syncShops.length) return [];
   const startIndex = syncShops.findIndex(shop => shop.id === startShopId);
   const index = startIndex >= 0 ? startIndex : 0;
-  if (!syncShops.length) return [];
-  const size = Math.min(SYNC_TOKEN_SESSION_SIZE, syncShops.length);
-  return Array.from({ length: size }, (_, offset) =>
-    syncShops[(index + offset) % syncShops.length].id
-  );
+  return syncShops.slice(index).map(shop => shop.id);
 }
 
 function getSyncShopName(shopId) {
   return syncShops.find(shop => shop.id === shopId)?.name || shopId || '—';
+}
+
+function getCurrentSyncBatchIds() {
+  if (!syncTokenSession.shopIds.length || syncTokenSession.completed) return [];
+  return syncTokenSession.shopIds.slice(
+    syncTokenSession.index,
+    syncTokenSession.index + SYNC_TOKEN_BATCH_SIZE
+  );
+}
+
+async function reloadOrderViewsAfterSync() {
+  currentPage = 1;
+  await loadOrders();
+  await loadSummary();
+  await loadHanoi();
+  await loadNuocHoa();
+  await loadMienBac();
 }
 
 function updateSyncTokenSessionHint() {
@@ -4896,11 +4910,15 @@ function updateSyncTokenSessionHint() {
   const tokenInput = document.getElementById('syncJsonAccessToken');
   const btn = document.getElementById('btnSyncJsonOrders');
   if (!hint || !select || !btn) return;
+  select.disabled = syncTokenSession.syncing;
+  if (tokenInput) tokenInput.disabled = syncTokenSession.syncing;
 
   if (!syncTokenSession.shopIds.length) {
-    hint.textContent = 'Chọn shop bắt đầu, nhập token seller của shop đang hiển thị, rồi bấm đồng bộ. Mỗi shop cần token mới.';
-    btn.textContent = 'Đồng bộ shop này';
-    btn.disabled = false;
+    hint.textContent = syncShops.length
+      ? 'Chọn shop bắt đầu, nhập token seller, rồi bấm đồng bộ. Hệ thống sẽ tự chạy tối đa 5 shop và dừng để nhập token tiếp theo.'
+      : 'Chưa tải được danh sách shop.';
+    btn.textContent = 'Đồng bộ 5 shop tiếp theo';
+    btn.disabled = !syncShops.length;
     return;
   }
 
@@ -4908,27 +4926,34 @@ function updateSyncTokenSessionHint() {
   if (currentShopId) select.value = currentShopId;
 
   if (syncTokenSession.completed) {
-    hint.textContent = `Đã đồng bộ xong ${syncTokenSession.shopIds.length}/${syncTokenSession.shopIds.length} shop. Phiên đồng bộ đã kết thúc.`;
-    btn.textContent = 'Phiên đã kết thúc';
+    hint.textContent = `Đã đồng bộ xong toàn bộ ${syncTokenSession.shopIds.length} shop trong danh sách. Phiên đồng bộ đã kết thúc.`;
+    btn.textContent = 'Đã đồng bộ hết danh sách';
     btn.disabled = true;
     if (tokenInput) tokenInput.value = '';
     return;
   }
 
-  hint.textContent = `Shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}: ${currentShopId} · ${getSyncShopName(currentShopId)}. Nhập token mới cho shop này.`;
-  btn.textContent = `Đồng bộ shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}`;
-  btn.disabled = false;
+  const batchIds = getCurrentSyncBatchIds();
+  const batchStart = syncTokenSession.index + 1;
+  const batchEnd = syncTokenSession.index + batchIds.length;
+  const shopNames = batchIds.map(shopId => `${shopId} · ${getSyncShopName(shopId)}`).join('; ');
+  hint.textContent = `Sắp đồng bộ shop ${batchStart}-${batchEnd}/${syncTokenSession.shopIds.length}: ${shopNames}. Nhập token, hệ thống sẽ chạy hết nhóm này rồi yêu cầu token tiếp theo.`;
+  btn.textContent = `Đồng bộ ${batchIds.length} shop tiếp theo`;
+  btn.disabled = syncTokenSession.syncing || !batchIds.length;
 }
 
 function prepareSyncTokenSession() {
-  const selectedShopId = document.getElementById('syncShopId')?.value.trim() || '';
+  const select = document.getElementById('syncShopId');
+  const selectedShopId = select?.value.trim() || syncShops[0]?.id || '';
+  if (select && !select.value && selectedShopId) select.value = selectedShopId;
   if (!selectedShopId || !syncShops.length) {
-    syncTokenSession = { shopIds: [], index: 0, completed: false };
+    syncTokenSession = { shopIds: [], index: 0, completed: false, syncing: false };
   } else {
     syncTokenSession = {
       shopIds: buildSyncTokenSession(selectedShopId),
       index: 0,
-      completed: false
+      completed: false,
+      syncing: false
     };
   }
   updateSyncTokenSessionHint();
@@ -4946,74 +4971,111 @@ function resetSyncTokenSession() {
 }
 
 async function syncCurrentTokenShop() {
-  const shopId = document.getElementById('syncShopId')?.value.trim() || '';
+  const selectedShopId = document.getElementById('syncShopId')?.value.trim() || '';
   const token = document.getElementById('syncJsonAccessToken')?.value.trim() || '';
   const btn = document.getElementById('btnSyncJsonOrders');
 
-  if (!shopId) {
+  if (!selectedShopId && !syncShops.length) {
     setSyncJsonMessage('Vui lòng chọn gian hàng.', 'err');
     return;
   }
-  if (!syncTokenSession.shopIds.length || syncTokenSession.completed) {
+  if (!syncTokenSession.shopIds.length) {
     prepareSyncTokenSession();
   }
-  const activeShopId = syncTokenSession.shopIds[syncTokenSession.index] || shopId;
+  if (syncTokenSession.completed) {
+    setSyncJsonMessage('Danh sách shop đã đồng bộ xong. Bấm bắt đầu lại nếu cần chạy lại.', 'ok');
+    return;
+  }
+  const batchIds = getCurrentSyncBatchIds();
+  if (!batchIds.length) {
+    syncTokenSession.completed = true;
+    updateSyncTokenSessionHint();
+    setSyncJsonMessage('Danh sách shop đã đồng bộ xong.', 'ok');
+    return;
+  }
   if (!token) {
-    setSyncJsonMessage(`Vui lòng nhập token seller cho shop ${activeShopId}.`, 'err');
+    setSyncJsonMessage(`Vui lòng nhập token seller để đồng bộ ${batchIds.length} shop tiếp theo.`, 'err');
     return;
   }
 
+  syncTokenSession.syncing = true;
   if (btn) {
     btn.disabled = true;
-    btn.textContent = 'Đang gọi API và lưu DB...';
+    btn.textContent = `Đang đồng bộ 0/${batchIds.length} shop...`;
   }
-  setSyncJsonMessage(`Đang đồng bộ shop ${activeShopId} · ${getSyncShopName(activeShopId)}...`, '');
+  updateSyncTokenSessionHint();
 
+  let syncedAny = false;
+  let batchSucceeded = false;
+  const totals = { synced: 0, unique: 0, added: 0, removed: 0 };
+  const batchStartIndex = syncTokenSession.index;
   try {
-    const res = await fetch('/api/sync-token-orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-ID': localStorage.getItem('chiaki_id') || ''
-      },
-      body: JSON.stringify({ shop_id: activeShopId, access_token: token })
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) {
-      throw new Error(data.error || `HTTP ${res.status}`);
+    for (let i = 0; i < batchIds.length; i += 1) {
+      const activeShopId = batchIds[i];
+      if (btn) btn.textContent = `Đang đồng bộ ${i + 1}/${batchIds.length} shop...`;
+      setSyncJsonMessage(`Đang đồng bộ shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}: ${activeShopId} · ${getSyncShopName(activeShopId)}...`, '');
+
+      const res = await fetch('/api/sync-token-orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-ID': localStorage.getItem('chiaki_id') || ''
+        },
+        body: JSON.stringify({ shop_id: activeShopId, access_token: token })
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(`${activeShopId}: ${data.error || `HTTP ${res.status}`}`);
+      }
+
+      syncedAny = true;
+      totals.synced += Number(data.synced || 0);
+      totals.unique += Number(data.unique_orders || data.synced || 0);
+      totals.added += Number(data.added_count || 0);
+      totals.removed += Number(data.removed_count || 0);
+      syncTokenSession.index += 1;
     }
 
+    batchSucceeded = true;
     lastSyncDelta = {
-      added: Number(data.added_count || 0),
-      removed: Number(data.removed_count || 0)
+      added: totals.added,
+      removed: totals.removed
     };
-    setSyncJsonMessage(
-      `${data.shop_name}: đã lưu ${data.unique_orders || data.synced} đơn (${data.synced} dòng sản phẩm) · +${lastSyncDelta.added} mới · -${lastSyncDelta.removed} đã bàn giao/huỷ`,
-      'ok'
-    );
-    const tokenInput = document.getElementById('syncJsonAccessToken');
-    if (tokenInput) tokenInput.value = '';
-    currentPage = 1;
-    await loadOrders();
-    await loadSummary();
-    await loadHanoi();
-    await loadNuocHoa();
-    await loadMienBac();
+    await reloadOrderViewsAfterSync();
 
-    syncTokenSession.index += 1;
     if (syncTokenSession.index >= syncTokenSession.shopIds.length) {
-      syncTokenSession.index = syncTokenSession.shopIds.length - 1;
+      syncTokenSession.index = syncTokenSession.shopIds.length;
       syncTokenSession.completed = true;
-      setSyncJsonMessage(`Đã đồng bộ toàn bộ ${syncTokenSession.shopIds.length} shop. Phiên đồng bộ kết thúc.`, 'ok');
+      setSyncJsonMessage(
+        `Đã đồng bộ xong toàn bộ ${syncTokenSession.shopIds.length} shop. Tổng ${totals.unique} đơn (${totals.synced} dòng sản phẩm) · +${totals.added} mới · -${totals.removed} đã bàn giao/huỷ.`,
+        'ok'
+      );
+    } else {
+      const nextBatchIds = getCurrentSyncBatchIds();
+      setSyncJsonMessage(
+        `Đã đồng bộ shop ${batchStartIndex + 1}-${syncTokenSession.index}/${syncTokenSession.shopIds.length}: ${totals.unique} đơn (${totals.synced} dòng sản phẩm) · +${totals.added} mới · -${totals.removed} đã bàn giao/huỷ. Nhập token mới để chạy ${nextBatchIds.length} shop tiếp theo.`,
+        'ok'
+      );
+    }
+  } catch (e) {
+    if (syncedAny) {
+      lastSyncDelta = {
+        added: totals.added,
+        removed: totals.removed
+      };
+      await reloadOrderViewsAfterSync();
+    }
+    setSyncJsonMessage(`Lỗi đồng bộ: ${e.message}. Đã lưu thành công ${syncTokenSession.index - batchStartIndex}/${batchIds.length} shop trong nhóm này.`, 'err');
+  } finally {
+    syncTokenSession.syncing = false;
+    if (batchSucceeded) {
+      const tokenInput = document.getElementById('syncJsonAccessToken');
+      if (tokenInput) {
+        tokenInput.value = '';
+        tokenInput.focus();
+      }
     }
     updateSyncTokenSessionHint();
-  } catch (e) {
-    setSyncJsonMessage(`Lỗi đồng bộ shop ${activeShopId}: ${e.message}`, 'err');
-  } finally {
-    if (btn && !syncTokenSession.completed) {
-      btn.disabled = false;
-      updateSyncTokenSessionHint();
-    }
   }
 }
 
