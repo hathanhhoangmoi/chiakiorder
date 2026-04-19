@@ -4268,7 +4268,8 @@ function openOrderInfoJsonWindow() {
     return;
   }
 
-  const url = `https://api.chiaki.vn/api/v2/order-view?sync_id=${encodeURIComponent(syncId)}`;
+  const userId = localStorage.getItem('chiaki_id') || '';
+  const url = `/api/order-info/raw?sync_id=${encodeURIComponent(syncId)}&user_id=${encodeURIComponent(userId)}`;
   const opened = window.open(url, 'chiakiOrderInfoJson', 'popup=yes,width=1100,height=820');
   if (!opened) {
     errEl.textContent = 'Trình duyệt đang chặn popup. Vui lòng cho phép popup rồi bấm lại.';
