@@ -17,17 +17,10 @@ SHOPS = [
     ("https://chiaki.vn/gian-hang-st4339", "PINASAGO Pin Sài Gòn", "STBCBL0Q2J"),
     ("https://chiaki.vn/gian-hang-st4961", "Kalos Việt Nam", "ST7A4S1NMX"),
     ("https://chiaki.vn/gian-hang-st4872", "Green House", "STFXBK1K2R"),
-    ("https://chiaki.vn/gian-hang-st4917", "Moss Skincare", "STMXKJHF9Q"),
-    ("https://chiaki.vn/gian-hang-st4647", "XXIV Store", "ST1O3RWF9U"),
-    ("https://chiaki.vn/gian-hang-st4732", "Ken Perfume", "ST8VBX0YDU"),
-    ("https://chiaki.vn/gian-hang-st5112", "MoiThom - Mèo bán nước hoa", "STA0D5B480"),
     ("https://chiaki.vn/gian-hang-st2292", "Thế Giới Hàng Auth 88", "STD3YL1TSI"),
-    ("https://chiaki.vn/gian-hang-st4940", "Mint- Skin Beauty & Cosmetics", "STIBP1581Z"),
-    ("https://chiaki.vn/gian-hang-st5096", "The Senté Hill", "STUAT0DIPC"),
     ("https://chiaki.vn/gian-hang-st1164", "O2 PHARMACY", "ST62778NKR"),
     ("https://chiaki.vn/gian-hang-st3612", "NGUYENKIM", "STYKS36NRV"),
     ("https://chiaki.vn/gian-hang-st5092", "Thế Giới Son", "STICBF43TU"),
-    ("https://chiaki.vn/gian-hang-st5125", "Felice Beauty Garden", "STNAHLO6A2"),
     ("https://chiaki.vn/gian-hang-st1600", "ChoychoyStore", "ST8TO6BBH6"),
     ("https://chiaki.vn/gian-hang-st2423", "Peony Cosmetics", "STMDTS134P"),
     ("https://chiaki.vn/gian-hang-st4965", "nhathuocsuckhoe2", "STD14EBRRV"),
@@ -54,7 +47,6 @@ SHOPS = [
     ("https://chiaki.vn/gian-hang-st3218", "Bảo Lâm Anh", "STPNJGJTR5"),
     ("https://chiaki.vn/gian-hang-st2557", "XUAN MINH PHARMACY", "STSV6MW0BI"),
     ("https://chiaki.vn/gian-hang-st2025", "Cali-Goods", "STKT8L8BFD"),
-    ("https://chiaki.vn/gian-hang-st5114", "Lixibox Hill", "STTHSM375S"),
 ]
 def extract_id(url: str) -> str | None:
     m = re.search(r'-st(\d+)', url, re.IGNORECASE)
