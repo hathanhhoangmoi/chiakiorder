@@ -370,8 +370,9 @@ def build_order_view_request(sync_id: str) -> tuple[str, dict, dict]:
         "platform": "ios",
         "imei": "A4184509-4A7A-423B-A0EE-044668760C71",
         "token": "YpuvtHHYC38QZvlRS8lJP3wDmj72iZlGPgBIyTrBWzc6vNXOWI",
-        "User-Agent": "curl/8.7.1",
-        "Accept": "*/*",
+        "User-Agent": "chiakiApp/3.6.4",
+        "Accept": "application/json, text/plain, */*",
+        "Connection": "keep-alive",
     }
 
 
@@ -390,14 +391,18 @@ async def fetch_order_view_json_with_curl(sync_id: str):
     cmd = [
         "curl",
         "-sS",
+        "--compressed",
         "--max-time",
         "25",
         url,
         "-H", "Host: api.chiaki.vn",
+        "-H", "Accept: application/json, text/plain, */*",
         "-H", "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8",
         "-H", "platform: ios",
         "-H", "imei: A4184509-4A7A-423B-A0EE-044668760C71",
         "-H", "token: YpuvtHHYC38QZvlRS8lJP3wDmj72iZlGPgBIyTrBWzc6vNXOWI",
+        "-H", "User-Agent: chiakiApp/3.6.4",
+        "-H", "Connection: keep-alive",
     ]
     proc = await asyncio.create_subprocess_exec(
         *cmd,
