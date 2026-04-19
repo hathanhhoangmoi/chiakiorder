@@ -2232,28 +2232,25 @@ body.compact-touch-ui #panelOrderInfo{
 
     <div class="info-modal-icon">🗂️</div>
     <div class="info-modal-title">Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
-    <div class="info-modal-sub">Lấy JSON đơn hàng chờ lấy hàng rồi lưu vào dữ liệu gian hàng</div>
+    <div class="info-modal-sub">Điền token seller để hệ thống tự lấy JSON và lưu dữ liệu gian hàng</div>
 
-    <label class="sync-label">Lấy JSON đơn hàng từ Chiaki</label>
-    <div class="sync-hint">Chọn gian hàng, điền token seller rồi mở tab JSON. Sau khi copy JSON trả về, paste vào ô bên dưới để lưu dữ liệu cho đúng shop.</div>
-    <select class="info-input" id="syncShopId" onchange="updateChiakiLink()">
+    <label class="sync-label">Phiên đồng bộ 5 shop</label>
+    <div class="sync-hint" id="syncSessionHint">Chọn shop bắt đầu, nhập token seller của shop đang hiển thị, rồi bấm đồng bộ. Mỗi shop cần token mới.</div>
+    <select class="info-input" id="syncShopId" onchange="prepareSyncTokenSession()">
       <option value="">Mời chọn</option>
     </select>
     <input class="info-input" id="syncJsonAccessToken" type="text"
-      placeholder="accesstoken hoặc Bearer token..."
+      placeholder="Token seller cho shop hiện tại..."
       style="margin-top:8px;font-family:monospace" />
-    <button class="btn-info-search" id="btnOpenSyncJson" type="button"
-      onclick="openWaitingJsonRequest()"
-      style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin:8px 0">
-      Mở tab JSON
-    </button>
-    <textarea class="info-input" id="syncJsonText" rows="9"
-      placeholder="Paste JSON đơn hàng trả về từ tab mới..."
-      style="min-height:180px;resize:vertical;font-family:monospace;font-size:11px;line-height:1.55;border-radius:8px"></textarea>
     <button class="btn-info-search" id="btnSyncJsonOrders" type="button"
-      onclick="syncWaitingJsonOrders()"
-      style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin-top:8px;background:linear-gradient(to right,#bad6fd,#f7e594);color:#1e3a5f">
-      Lưu JSON vào DB
+      onclick="syncCurrentTokenShop()"
+      style="display:block;width:100%;text-align:center;text-decoration:none;padding:11px;margin:8px 0 0;background:linear-gradient(to right,#bad6fd,#f7e594);color:#1e3a5f">
+      Đồng bộ shop này
+    </button>
+    <button class="btn-info-search" id="btnResetSyncSession" type="button"
+      onclick="resetSyncTokenSession()"
+      style="display:block;width:100%;text-align:center;text-decoration:none;padding:10px;margin-top:8px;background:rgba(255,255,255,.7);color:#7a3040;border:1px solid rgba(245,186,213,.45)">
+      Bắt đầu lại phiên 5 shop
     </button>
     <div class="info-error" id="syncJsonMsg" style="margin-top:6px"></div>
 </div>
@@ -4876,77 +4873,110 @@ function setSyncJsonMessage(message, type = '') {
   msg.className = type ? `sync-msg ${type}` : 'sync-msg';
 }
 
-function openWaitingJsonRequest() {
-  const shopId = document.getElementById('syncShopId')?.value.trim() || '';
-  const token = document.getElementById('syncJsonAccessToken')?.value.trim() || '';
-  if (!shopId) {
-    setSyncJsonMessage('Vui lòng chọn gian hàng.', 'err');
-    return;
-  }
-  if (!token) {
-    setSyncJsonMessage('Vui lòng nhập accesstoken.', 'err');
-    return;
-  }
+const SYNC_TOKEN_SESSION_SIZE = 5;
+let syncTokenSession = { shopIds: [], index: 0, completed: false };
 
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = '/api/sync-json-request';
-  const popupName = `chiaki_json_${Date.now()}`;
-  const popup = window.open(
-    'about:blank',
-    popupName,
-    'popup=yes,width=980,height=760,left=80,top=60,resizable=yes,scrollbars=yes'
+function buildSyncTokenSession(startShopId = '') {
+  const startIndex = syncShops.findIndex(shop => shop.id === startShopId);
+  const index = startIndex >= 0 ? startIndex : 0;
+  if (!syncShops.length) return [];
+  const size = Math.min(SYNC_TOKEN_SESSION_SIZE, syncShops.length);
+  return Array.from({ length: size }, (_, offset) =>
+    syncShops[(index + offset) % syncShops.length].id
   );
-  form.target = popup ? popupName : '_blank';
-  form.style.display = 'none';
-
-  [
-    ['shop_id', shopId],
-    ['access_token', token],
-    ['user_id', localStorage.getItem('chiaki_id') || '']
-  ].forEach(([name, value]) => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
-  });
-
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-  if (popup) popup.focus();
-  setSyncJsonMessage('Đã mở cửa sổ JSON. Copy toàn bộ JSON trả về rồi paste vào ô bên dưới.', 'ok');
 }
 
-async function syncWaitingJsonOrders() {
+function getSyncShopName(shopId) {
+  return syncShops.find(shop => shop.id === shopId)?.name || shopId || '—';
+}
+
+function updateSyncTokenSessionHint() {
+  const hint = document.getElementById('syncSessionHint');
+  const select = document.getElementById('syncShopId');
+  const tokenInput = document.getElementById('syncJsonAccessToken');
+  const btn = document.getElementById('btnSyncJsonOrders');
+  if (!hint || !select || !btn) return;
+
+  if (!syncTokenSession.shopIds.length) {
+    hint.textContent = 'Chọn shop bắt đầu, nhập token seller của shop đang hiển thị, rồi bấm đồng bộ. Mỗi shop cần token mới.';
+    btn.textContent = 'Đồng bộ shop này';
+    btn.disabled = false;
+    return;
+  }
+
+  const currentShopId = syncTokenSession.shopIds[syncTokenSession.index] || '';
+  if (currentShopId) select.value = currentShopId;
+
+  if (syncTokenSession.completed) {
+    hint.textContent = `Đã đồng bộ xong ${syncTokenSession.shopIds.length}/${syncTokenSession.shopIds.length} shop. Phiên đồng bộ đã kết thúc.`;
+    btn.textContent = 'Phiên đã kết thúc';
+    btn.disabled = true;
+    if (tokenInput) tokenInput.value = '';
+    return;
+  }
+
+  hint.textContent = `Shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}: ${currentShopId} · ${getSyncShopName(currentShopId)}. Nhập token mới cho shop này.`;
+  btn.textContent = `Đồng bộ shop ${syncTokenSession.index + 1}/${syncTokenSession.shopIds.length}`;
+  btn.disabled = false;
+}
+
+function prepareSyncTokenSession() {
+  const selectedShopId = document.getElementById('syncShopId')?.value.trim() || '';
+  if (!selectedShopId || !syncShops.length) {
+    syncTokenSession = { shopIds: [], index: 0, completed: false };
+  } else {
+    syncTokenSession = {
+      shopIds: buildSyncTokenSession(selectedShopId),
+      index: 0,
+      completed: false
+    };
+  }
+  updateSyncTokenSessionHint();
+}
+
+function resetSyncTokenSession() {
+  prepareSyncTokenSession();
+  const tokenInput = document.getElementById('syncJsonAccessToken');
+  if (tokenInput) tokenInput.value = '';
+  if (syncTokenSession.shopIds.length) {
+    setSyncJsonMessage(`Đã bắt đầu lại phiên từ shop ${syncTokenSession.shopIds[0]}.`, 'ok');
+  } else {
+    setSyncJsonMessage('Vui lòng chọn shop bắt đầu.', 'err');
+  }
+}
+
+async function syncCurrentTokenShop() {
   const shopId = document.getElementById('syncShopId')?.value.trim() || '';
-  const jsonText = document.getElementById('syncJsonText')?.value.trim() || '';
+  const token = document.getElementById('syncJsonAccessToken')?.value.trim() || '';
   const btn = document.getElementById('btnSyncJsonOrders');
 
   if (!shopId) {
     setSyncJsonMessage('Vui lòng chọn gian hàng.', 'err');
     return;
   }
-  if (!jsonText) {
-    setSyncJsonMessage('Vui lòng paste JSON trả về từ Chiaki.', 'err');
+  if (!syncTokenSession.shopIds.length || syncTokenSession.completed) {
+    prepareSyncTokenSession();
+  }
+  const activeShopId = syncTokenSession.shopIds[syncTokenSession.index] || shopId;
+  if (!token) {
+    setSyncJsonMessage(`Vui lòng nhập token seller cho shop ${activeShopId}.`, 'err');
     return;
   }
 
   if (btn) {
     btn.disabled = true;
-    btn.textContent = 'Đang lưu JSON...';
+    btn.textContent = 'Đang gọi API và lưu DB...';
   }
-  setSyncJsonMessage('Đang đọc JSON và lưu dữ liệu...', '');
+  setSyncJsonMessage(`Đang đồng bộ shop ${activeShopId} · ${getSyncShopName(activeShopId)}...`, '');
 
   try {
-    const res = await fetch('/api/sync-json-orders', {
+    const res = await fetch('/api/sync-token-orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-User-ID': localStorage.getItem('chiaki_id') || ''
       },
-      body: JSON.stringify({ shop_id: shopId, json_text: jsonText })
+      body: JSON.stringify({ shop_id: activeShopId, access_token: token })
     });
     const data = await res.json();
     if (!res.ok || data.error) {
@@ -4961,17 +4991,28 @@ async function syncWaitingJsonOrders() {
       `${data.shop_name}: đã lưu ${data.unique_orders || data.synced} đơn (${data.synced} dòng sản phẩm) · +${lastSyncDelta.added} mới · -${lastSyncDelta.removed} đã bàn giao/huỷ`,
       'ok'
     );
-    const jsonInput = document.getElementById('syncJsonText');
-    if (jsonInput) jsonInput.value = '';
+    const tokenInput = document.getElementById('syncJsonAccessToken');
+    if (tokenInput) tokenInput.value = '';
     currentPage = 1;
     await loadOrders();
     await loadSummary();
+    await loadHanoi();
+    await loadNuocHoa();
+    await loadMienBac();
+
+    syncTokenSession.index += 1;
+    if (syncTokenSession.index >= syncTokenSession.shopIds.length) {
+      syncTokenSession.index = syncTokenSession.shopIds.length - 1;
+      syncTokenSession.completed = true;
+      setSyncJsonMessage(`Đã đồng bộ toàn bộ ${syncTokenSession.shopIds.length} shop. Phiên đồng bộ kết thúc.`, 'ok');
+    }
+    updateSyncTokenSessionHint();
   } catch (e) {
-    setSyncJsonMessage(`Lỗi lưu JSON: ${e.message}`, 'err');
+    setSyncJsonMessage(`Lỗi đồng bộ shop ${activeShopId}: ${e.message}`, 'err');
   } finally {
-    if (btn) {
+    if (btn && !syncTokenSession.completed) {
       btn.disabled = false;
-      btn.textContent = 'Lưu JSON vào DB';
+      updateSyncTokenSessionHint();
     }
   }
 }
@@ -5050,11 +5091,13 @@ async function loadSyncShops() {
     })).filter(shop => shop.id);
     window.shopIdNameMap = Object.fromEntries(syncShops.map(shop => [shop.id, shop.name]));
     populateSyncShopSelect();
+    prepareSyncTokenSession();
   } catch (e) {
     console.error("loadSyncShops error", e);
     syncShops = [];
     window.shopIdNameMap = {};
     populateSyncShopSelect();
+    prepareSyncTokenSession();
   }
 }
 async function fetchSideOrderInfo() {
