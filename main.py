@@ -6,11 +6,11 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 import httpx
 from fastapi import Depends, FastAPI, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
-from database import engine, get_db, migrate
+from database import SessionLocal, engine, get_db, migrate
 from models import (
     Base,
     ExternalOrderConfigHoang,
@@ -1624,3 +1624,139 @@ async def sync_token_orders_batch(request: Request, body: dict, db: Session = De
         "results": results,
         "totals": totals,
     }
+
+
+def encode_sync_progress_event(event: dict) -> str:
+    return _json.dumps(event, ensure_ascii=False) + "\n"
+
+
+async def stream_waiting_order_sync(start_index: int, access_token: str):
+    shops = get_order_sync_shop_sequence()
+    total_shops = len(shops)
+    start_index = max(0, min(start_index, total_shops))
+    sync_shops = shops[start_index:]
+    totals = {"synced": 0, "unique_orders": 0, "added": 0, "removed": 0, "empty": 0}
+    results = []
+    next_index = start_index
+    db = SessionLocal()
+
+    yield encode_sync_progress_event({
+        "type": "start",
+        "start_index": start_index,
+        "next_index": next_index,
+        "total_shops": total_shops,
+        "processed_count": 0,
+        "remaining": len(sync_shops),
+        "totals": totals,
+    })
+
+    try:
+        async with httpx.AsyncClient(timeout=45, follow_redirects=True) as client:
+            for offset, shop in enumerate(sync_shops):
+                shop_id = str(shop.get("shop_id", "") or "").strip()
+                shop_name = str(shop.get("shop_name", shop_id) or "").strip()
+                current_index = start_index + offset
+                yield encode_sync_progress_event({
+                    "type": "progress",
+                    "phase": "fetching",
+                    "shop_id": shop_id,
+                    "shop_name": shop_name,
+                    "current": current_index + 1,
+                    "total_shops": total_shops,
+                    "next_index": next_index,
+                    "totals": totals,
+                })
+
+                try:
+                    result = await fetch_and_persist_waiting_orders(
+                        client,
+                        db,
+                        shop_id,
+                        access_token,
+                        allow_empty=True,
+                    )
+                except Exception as exc:
+                    db.rollback()
+                    yield encode_sync_progress_event({
+                        "type": "error",
+                        "error": f"Lỗi đồng bộ shop {shop_id} - {shop_name}: {exc}",
+                        "shop_id": shop_id,
+                        "shop_name": shop_name,
+                        "current": current_index + 1,
+                        "next_index": next_index,
+                        "total_shops": total_shops,
+                        "processed_count": next_index - start_index,
+                        "results": results,
+                        "totals": totals,
+                    })
+                    return
+
+                next_index = current_index + 1
+                totals["synced"] += int(result.get("synced") or 0)
+                totals["unique_orders"] += int(result.get("unique_orders") or 0)
+                totals["added"] += int(result.get("added_count") or 0)
+                totals["removed"] += int(result.get("removed_count") or 0)
+                if result.get("empty_orders"):
+                    totals["empty"] += 1
+
+                shop_result = {
+                    "shop_id": shop_id,
+                    "shop_name": shop_name,
+                    "synced": result.get("synced", 0),
+                    "unique_orders": result.get("unique_orders", 0),
+                    "added_count": result.get("added_count", 0),
+                    "removed_count": result.get("removed_count", 0),
+                    "empty_orders": bool(result.get("empty_orders")),
+                }
+                results.append(shop_result)
+                yield encode_sync_progress_event({
+                    "type": "progress",
+                    "phase": "done_shop",
+                    "shop": shop_result,
+                    "current": next_index,
+                    "total_shops": total_shops,
+                    "next_index": next_index,
+                    "processed_count": next_index - start_index,
+                    "remaining": max(total_shops - next_index, 0),
+                    "totals": totals,
+                })
+    finally:
+        db.close()
+
+    yield encode_sync_progress_event({
+        "type": "done",
+        "completed": next_index >= total_shops,
+        "start_index": start_index,
+        "next_index": next_index,
+        "total_shops": total_shops,
+        "processed_count": len(sync_shops),
+        "results": results,
+        "totals": totals,
+    })
+
+
+@app.post("/api/sync-token-orders-stream")
+async def sync_token_orders_stream(request: Request):
+    user_id = request.headers.get("X-User-ID", "").strip()
+    if not get_user_capabilities(user_id).get("admin_tools"):
+        return JSONResponse({"error": "Không có quyền truy cập."}, status_code=403)
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    access_token = str(body.get("access_token", "") or "").strip()
+    if not access_token:
+        return JSONResponse({"error": "Vui lòng nhập token seller."}, status_code=422)
+
+    try:
+        start_index = int(body.get("start_index", 0) or 0)
+    except Exception:
+        start_index = 0
+
+    return StreamingResponse(
+        stream_waiting_order_sync(start_index, access_token),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
