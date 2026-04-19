@@ -876,6 +876,38 @@ tbody td{padding:11px 14px;font-size:12px;color:#570301;vertical-align:middle}
   font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   text-align:left;
 }
+.info-json-input{
+  width:100%;
+  min-height:170px;
+  resize:vertical;
+  padding:12px;
+  border:1px solid rgba(186,214,253,.45);
+  border-radius:8px;
+  background:rgba(255,255,255,.62);
+  color:#3b3551;
+  font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  outline:none;
+}
+.info-json-input:focus{border-color:#BAD6FD;box-shadow:0 0 0 3px rgba(186,214,253,.15)}
+.order-info-items{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.order-info-item{
+  display:grid;
+  grid-template-columns:54px 1fr;
+  gap:10px;
+  padding:9px;
+  border:1px solid rgba(186,214,253,.25);
+  border-radius:8px;
+  background:rgba(255,255,255,.45);
+}
+.order-info-item img{
+  width:54px;
+  height:54px;
+  object-fit:cover;
+  border-radius:8px;
+  background:rgba(255,255,255,.8);
+}
+.order-info-item-name{font-size:12px;font-weight:700;color:#3b3551;line-height:1.45}
+.order-info-item-meta{font-size:11px;color:#7c6fa0;line-height:1.7;margin-top:3px}
 .info-row{
   display:flex;align-items:flex-start;
   justify-content:space-between;gap:8px;
@@ -2188,19 +2220,24 @@ body.compact-touch-ui #panelOrderInfo{
     <div class="panel-body">
     <div class="info-modal-icon">🔍</div>
     <div class="info-modal-title">Thông tin đơn hàng</div>
-    <div class="info-modal-sub">Điền sync_id để lấy toàn bộ JSON thông tin đơn hàng từ Chiaki</div>
+    <div class="info-modal-sub">Điền sync_id, mở JSON đơn hàng, dán JSON vào đây để xem thông tin cần thiết</div>
     <input class="info-input" id="infoOrderCode" type="text"
       placeholder="sync_id..."
-      onkeydown="if(event.key==='Enter') fetchOrderInfo()"
+      onkeydown="if(event.key==='Enter') openOrderInfoJsonWindow()"
       style="border-radius:8px;font-family:monospace;letter-spacing:0" />
+    <button class="btn-info-search" id="infoOpenJsonBtn" onclick="openOrderInfoJsonWindow()" style="width:100%;margin-bottom:10px">Mở cửa sổ JSON</button>
+    <textarea class="info-json-input" id="orderInfoJsonText"
+      placeholder="Dán JSON trả về từ cửa sổ vừa mở vào đây..."></textarea>
 
     <div class="info-error" id="infoError"></div>
     <div class="info-result" id="infoResult">
-      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin-bottom:8px">JSON THÔNG TIN ĐƠN HÀNG</div>
-      <pre class="info-json-output" id="orderInfoJson">—</pre>
+      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin-bottom:8px">THÔNG TIN ĐƠN HÀNG</div>
+      <div id="orderInfoSummaryRows"></div>
+      <div style="font-size:11px;font-weight:800;color:#9b8bb4;letter-spacing:.5px;margin:12px 0 8px">SẢN PHẨM</div>
+      <div class="order-info-items" id="orderInfoItems"></div>
     </div>
 <div class="info-btns">
-  <button class="btn-info-search" id="infoSearchBtn" onclick="fetchOrderInfo()" style="flex:1">🔍 Lấy thông tin theo sync_id</button>
+  <button class="btn-info-search" id="infoSearchBtn" onclick="fetchOrderInfo()" style="flex:1">Đọc JSON đơn hàng</button>
 </div>
 </div>
 </div>
@@ -2220,12 +2257,12 @@ body.compact-touch-ui #panelOrderInfo{
 
     <div class="info-modal-icon">🗂️</div>
     <div class="info-modal-title">Đồng bộ đơn hàng CHỜ LẤY HÀNG</div>
-    <div class="info-modal-sub">Điền token seller để hệ thống tự động lấy JSON và lưu dữ liệu theo từng nhóm shop</div>
+    <div class="info-modal-sub">Điền token seller để hệ thống tự động lấy JSON và lưu dữ liệu toàn bộ shop</div>
 
-    <label class="sync-label">Phiên đồng bộ tự động theo nhóm 5 shop</label>
-    <div class="sync-hint" id="syncSessionHint">Nhập token seller rồi bấm đồng bộ. Server sẽ tự quét 5 shop kế tiếp, shop nào không có đơn sẽ bỏ qua.</div>
+    <label class="sync-label">Phiên đồng bộ tự động toàn bộ shop</label>
+    <div class="sync-hint" id="syncSessionHint">Nhập token seller rồi bấm đồng bộ. Server sẽ tự quét toàn bộ shop, shop nào không có đơn sẽ bỏ qua.</div>
     <input class="info-input" id="syncJsonAccessToken" type="text"
-      placeholder="Token seller cho nhóm 5 shop tiếp theo..."
+      placeholder="Token seller để đồng bộ toàn bộ shop..."
       onkeydown="if(event.key==='Enter') syncCurrentTokenShop()"
       style="margin-top:8px;font-family:monospace" />
     <button class="btn-info-search" id="btnSyncJsonOrders" type="button"
@@ -4181,14 +4218,93 @@ function closeOrderInfoModal() {
   document.getElementById('infoResult').classList.remove('show');
   document.getElementById('infoError').classList.remove('show');
   document.getElementById('infoOrderCode').value = '';
+  const jsonText = document.getElementById('orderInfoJsonText');
+  if (jsonText) jsonText.value = '';
+}
+
+function openOrderInfoJsonWindow() {
+  const syncId = document.getElementById('infoOrderCode').value.trim();
+  const errEl    = document.getElementById('infoError');
+  errEl.classList.remove('show');
+
+  if (!syncId) {
+    errEl.textContent = 'Vui lòng nhập sync_id.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  const userId = localStorage.getItem('chiaki_id') || '';
+  const url = `/api/order-info/raw?sync_id=${encodeURIComponent(syncId)}&user_id=${encodeURIComponent(userId)}`;
+  const opened = window.open(url, 'chiakiOrderInfoJson', 'popup=yes,width=1100,height=820,noopener');
+  if (!opened) {
+    errEl.textContent = 'Trình duyệt đang chặn popup. Vui lòng cho phép popup rồi bấm lại.';
+    errEl.classList.add('show');
+    return;
+  }
+  setTimeout(() => document.getElementById('orderInfoJsonText')?.focus(), 100);
+}
+
+function renderOrderInfoSummary(summary) {
+  const rowsEl = document.getElementById('orderInfoSummaryRows');
+  const itemsEl = document.getElementById('orderInfoItems');
+  if (!rowsEl || !itemsEl) return;
+
+  const rows = [
+    ['Mã đơn hàng', summary.order_code],
+    ['Sync ID', summary.sync_id],
+    ['Trạng thái', summary.status],
+    ['Mã trạng thái', summary.status_code],
+    ['Thời gian tạo', summary.created_at],
+    ['Khách hàng', summary.customer_name],
+    ['SĐT', summary.phone],
+    ['Địa chỉ', summary.address],
+    ['Tổng tiền', summary.amount],
+    ['Tiền hàng', summary.temporary_amount],
+    ['Phí ship', summary.shipping_fee],
+    ['Giảm giá', summary.discount],
+    ['Thanh toán', summary.payment],
+    ['Vận chuyển', summary.shipping_method],
+    ['ĐVVC', summary.shipper],
+    ['Mã vận đơn', summary.shipping_code],
+    ['Dự kiến giao', summary.delivery_text],
+    ['Kho', summary.warehouse],
+    ['Store code', summary.store_code],
+    ['Seller', Array.isArray(summary.seller_names) && summary.seller_names.length ? summary.seller_names.join(', ') : '—'],
+    ['Nền tảng', summary.platform],
+    ['Delivery Location ID', summary.delivery_location_id],
+    ['District Delivery ID', summary.district_delivery_id],
+    ['Commune Delivery ID', summary.commune_delivery_id],
+  ];
+
+  rowsEl.innerHTML = rows.map(([label, value]) => `
+    <div class="info-row">
+      <span class="info-label">${escapeHtml(label)}</span>
+      <span class="info-value">${escapeHtml(value || '—')}</span>
+    </div>
+  `).join('');
+
+  const items = Array.isArray(summary.items) ? summary.items : [];
+  itemsEl.innerHTML = items.length ? items.map(item => `
+    <div class="order-info-item">
+      ${item.image_url ? `<img src="${escapeHtml(item.image_url)}" alt="">` : '<div></div>'}
+      <div>
+        <div class="order-info-item-name">${escapeHtml(item.name || '—')}</div>
+        <div class="order-info-item-meta">
+          Mã: <b>${escapeHtml(item.product_code || '—')}</b> · SL: <b>${escapeHtml(item.quantity || '—')}</b><br>
+          Đơn giá: <b>${escapeHtml(item.unit_price || '—')}</b> · Thành tiền: <b>${escapeHtml(item.item_amount || '—')}</b><br>
+          Gian hàng: <b>${escapeHtml(item.store_name || '—')}</b>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div style="font-size:12px;color:#7c6fa0">Không có sản phẩm trong JSON.</div>';
 }
 
 async function fetchOrderInfo() {
   const syncId = document.getElementById('infoOrderCode').value.trim();
+  const jsonText = document.getElementById('orderInfoJsonText')?.value.trim() || '';
   const errEl    = document.getElementById('infoError');
   const resultEl = document.getElementById('infoResult');
   const btn      = document.getElementById('infoSearchBtn');
-  const jsonEl   = document.getElementById('orderInfoJson');
 
   errEl.classList.remove('show');
   resultEl.classList.remove('show');
@@ -4197,9 +4313,12 @@ async function fetchOrderInfo() {
     errEl.textContent = 'Vui lòng nhập sync_id.';
     errEl.classList.add('show'); return;
   }
+  if (!jsonText) {
+    errEl.textContent = 'Vui lòng dán JSON thông tin đơn hàng.';
+    errEl.classList.add('show'); return;
+  }
   btn.disabled = true;
-  btn.textContent = 'Đang lấy JSON...';
-  if (jsonEl) jsonEl.textContent = 'Đang tải...';
+  btn.textContent = 'Đang đọc JSON...';
 
   try {
     const res = await fetch('/api/order-info', {
@@ -4208,7 +4327,7 @@ async function fetchOrderInfo() {
         'Content-Type': 'application/json',
         'X-User-ID': localStorage.getItem('chiaki_id') || ''
       },
-      body: JSON.stringify({ sync_id: syncId })
+      body: JSON.stringify({ sync_id: syncId, json_text: jsonText })
     });
     const data = await res.json();
 
@@ -4216,16 +4335,14 @@ async function fetchOrderInfo() {
       errEl.textContent = data.error;
       errEl.classList.add('show'); return;
     }
-    if (jsonEl) {
-      jsonEl.textContent = JSON.stringify(data.data ?? data, null, 2);
-    }
+    renderOrderInfoSummary(data.summary || {});
     resultEl.classList.add('show');
   } catch(e) {
     errEl.textContent = 'Lỗi kết nối: ' + e.message;
     errEl.classList.add('show');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔍 Lấy thông tin theo sync_id';
+    btn.textContent = 'Đọc JSON đơn hàng';
   }
 }
 
@@ -4679,7 +4796,6 @@ function setSyncJsonMessage(message, type = '') {
   msg.className = type ? `sync-msg ${type}` : 'sync-msg';
 }
 
-const SYNC_TOKEN_BATCH_SIZE = 5;
 let syncTokenSession = { index: 0, total: 0, completed: false, syncing: false };
 
 async function reloadOrderViewsAfterSync() {
@@ -4708,16 +4824,15 @@ function updateSyncTokenSessionHint() {
     return;
   }
 
-  const remaining = total ? Math.max(total - syncTokenSession.index, 0) : SYNC_TOKEN_BATCH_SIZE;
-  const batchSize = Math.min(SYNC_TOKEN_BATCH_SIZE, remaining || SYNC_TOKEN_BATCH_SIZE);
+  const remaining = total ? Math.max(total - syncTokenSession.index, 0) : 0;
   if (!total && !syncShops.length) {
     hint.textContent = 'Đang tải danh sách shop. Vẫn có thể nhập token, server sẽ tự lấy danh sách khi đồng bộ.';
   } else if (syncTokenSession.index === 0) {
-    hint.textContent = `Nhập token để server tự quét ${batchSize} shop đầu tiên. Shop nào không có đơn sẽ bỏ qua.`;
+    hint.textContent = `Nhập token để server tự quét toàn bộ ${total} shop. Shop nào không có đơn sẽ bỏ qua.`;
   } else {
-    hint.textContent = `Đã xử lý ${syncTokenSession.index}/${total} shop. Nhập token mới để server quét ${batchSize} shop tiếp theo.`;
+    hint.textContent = `Đã xử lý ${syncTokenSession.index}/${total} shop.`;
   }
-  btn.textContent = syncTokenSession.index === 0 ? 'Bắt đầu đồng bộ' : `Đồng bộ ${batchSize} shop tiếp theo`;
+  btn.textContent = syncTokenSession.index === 0 ? 'Bắt đầu đồng bộ' : `Đồng bộ ${remaining} shop còn lại`;
   btn.disabled = syncTokenSession.syncing || (total > 0 && syncTokenSession.index >= total);
 }
 
@@ -4747,20 +4862,20 @@ async function syncCurrentTokenShop() {
     return;
   }
   if (!token) {
-    setSyncJsonMessage('Vui lòng nhập token seller để server đồng bộ 5 shop tiếp theo.', 'err');
+    setSyncJsonMessage('Vui lòng nhập token seller để server đồng bộ toàn bộ shop.', 'err');
     return;
   }
 
   syncTokenSession.syncing = true;
   if (btn) {
     btn.disabled = true;
-    btn.textContent = 'Server đang quét 5 shop...';
+    btn.textContent = 'Server đang quét toàn bộ shop...';
   }
   updateSyncTokenSessionHint();
 
   const batchStartIndex = syncTokenSession.index;
   try {
-    setSyncJsonMessage(`Server đang đồng bộ shop ${batchStartIndex + 1} đến ${batchStartIndex + SYNC_TOKEN_BATCH_SIZE}...`, '');
+    setSyncJsonMessage('Server đang đồng bộ toàn bộ shop. Vui lòng chờ đến khi kết thúc phiên...', '');
     const res = await fetch('/api/sync-token-orders-batch', {
       method: 'POST',
       headers: {
@@ -4800,7 +4915,7 @@ async function syncCurrentTokenShop() {
       tokenInput.focus();
     }
 
-    const processed = Number(data.batch_size || 0);
+    const processed = Number(data.processed_count || data.batch_size || 0);
     const empty = Number(totals.empty || 0);
     const unique = Number(totals.unique_orders || 0);
     const synced = Number(totals.synced || 0);
@@ -4809,17 +4924,17 @@ async function syncCurrentTokenShop() {
 
     if (syncTokenSession.completed) {
       setSyncJsonMessage(
-        `Đã đồng bộ xong toàn bộ ${syncTokenSession.total} shop. Nhóm cuối xử lý ${processed} shop, ${empty} shop không có đơn. Tổng nhóm: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ. Phiên đồng bộ kết thúc.`,
+        `Đã đồng bộ xong toàn bộ ${syncTokenSession.total} shop. Đã xử lý ${processed} shop, ${empty} shop không có đơn. Tổng: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ. Phiên đồng bộ kết thúc.`,
         'ok'
       );
     } else {
       setSyncJsonMessage(
-        `Đã xử lý shop ${batchStartIndex + 1}-${syncTokenSession.index}/${syncTokenSession.total}: ${processed} shop, ${empty} shop không có đơn. Tổng nhóm: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ. Nhập token mới để server quét 5 shop tiếp theo.`,
+        `Đã xử lý shop ${batchStartIndex + 1}-${syncTokenSession.index}/${syncTokenSession.total}: ${processed} shop, ${empty} shop không có đơn. Tổng: ${unique} đơn (${synced} dòng sản phẩm) · +${added} mới · -${removed} đã bàn giao/huỷ.`,
         'ok'
       );
     }
   } catch (e) {
-    setSyncJsonMessage(`Lỗi đồng bộ: ${e.message}. Server đã xử lý ${syncTokenSession.index - batchStartIndex}/${SYNC_TOKEN_BATCH_SIZE} shop trong nhóm này.`, 'err');
+    setSyncJsonMessage(`Lỗi đồng bộ: ${e.message}. Server đã xử lý ${syncTokenSession.index - batchStartIndex} shop trước khi lỗi.`, 'err');
   } finally {
     syncTokenSession.syncing = false;
     updateSyncTokenSessionHint();
